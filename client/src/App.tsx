@@ -1,11 +1,12 @@
 import React from 'react';
 import './App.css';
 import Homepage from './Components/HomePage/homepage';
+import { Box } from '@mui/material';
 
 const App: React.FC = () => (
-  <div>
+  <Box padding='24px'>
     <Homepage />
-  </div>
+  </Box>
 );
 
 

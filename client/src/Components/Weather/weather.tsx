@@ -1,14 +1,16 @@
-import { Box } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { fetchWeather } from '../Weather/weatherUtil';
+import { fetchHourlyWeather, fetchWeather, WeatherData } from '../Weather/weatherUtil';
 import Search from '../Search/search';
 import LottieWeatherAnimation from './lottieWeatherAnimation';
 
 
 const Weather: React.FC = () => {
-  const [weather, setWeather] = useState<string | null>(null);
+  const [weather, setWeather] = useState<WeatherData | null>(null);
   const [isLoading , setIsLoading] = useState<boolean>(true);
   const [cityName, setCityName] = useState<string | null>(null);
+  const [longitude, setLongitude] = useState<number >(0);
+  const [latitude, setLatitude] = useState<number >(0);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -21,6 +23,10 @@ const Weather: React.FC = () => {
       });
   }, []);
     
+  useEffect(() => {
+    fetchHourlyWeather({longitude,latitude}).then(data => {console.log(data)});
+  }, [longitude,latitude]);
+  
   const handleSearchSubmit = (cityName: string) => {
     setIsLoading(true);
     setCityName(cityName);
@@ -38,6 +44,10 @@ const Weather: React.FC = () => {
       ]).then(([weather]) => {
         if (weather) {
           setWeather(weather);
+          setCityName(weather.city);
+          setLongitude(weather.longitude);
+          setLatitude(weather.latitude);
+
         } else {
           setWeather(null);
         }
@@ -70,7 +80,16 @@ const Weather: React.FC = () => {
         (
             <>
       <Search cityName={cityName} onSubmit={handleSearchSubmit}/>
-      {weather && <Box>{weather}</Box>}
+      <Typography variant='h4'> Weather in {cityName}</Typography>
+      {weather && 
+      <Stack>
+        <Typography variant='h6'>Temperature: {weather.temperature}</Typography>
+        <Typography variant='h6'>Humidity: {weather.humidity}</Typography>
+        <Typography variant='h6'>Wind Speed: {weather.wind}</Typography>
+
+
+
+        </Stack>}
         </>
             )}
     
