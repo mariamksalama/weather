@@ -8,24 +8,15 @@ import LottieWeatherAnimation from './lottieWeatherAnimation';
 const Weather: React.FC = () => {
   const [weather, setWeather] = useState<string | null>(null);
   const [isLoading , setIsLoading] = useState<boolean>(true);
-    const [cityName, setCityName] = useState<string | null>(null);
+  const [cityName, setCityName] = useState<string | null>(null);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async position => {
         const latitude = position.coords.latitude;
         const longitude = position.coords.longitude;
-        Promise.all([
-            fetchWeather({ latitude, longitude }),
-            new Promise(resolve => setTimeout(resolve, 2000))
-          ]).then(([weather]) => {
-            if (weather) {
-              setWeather(weather);
-            } else {
-              setWeather(null);
-            }
-            setIsLoading(false);
-          });
+        setWeatherInfo({ longitude, latitude });
+
         
       });
   }, []);
@@ -33,8 +24,16 @@ const Weather: React.FC = () => {
   const handleSearchSubmit = (cityName: string) => {
     setIsLoading(true);
     setCityName(cityName);
+    setWeatherInfo({cityName});
+   
+   
+  };
+
+  const setWeatherInfo = (weatherInfo: {longitude: number, latitude:number}|
+    {cityName: string}
+  ) => {
     Promise.all([
-        fetchWeather({ cityName }),
+        fetchWeather(weatherInfo),
         new Promise(resolve => setTimeout(resolve, 2000))
       ]).then(([weather]) => {
         if (weather) {
@@ -44,7 +43,6 @@ const Weather: React.FC = () => {
         }
         setIsLoading(false);
       });
-   
   };
 
   

@@ -1,6 +1,6 @@
 export type WeatherCoords = 
-  | { longitude: number; latitude: number; cityName?: never }
-  | { cityName: string; longitude?: never; latitude?: never };
+{longitude: number, latitude:number}|
+{cityName: string};
 
 export const fetchWeather = async (weatherData: WeatherCoords): Promise<string | null> => {
   const apiKey = process.env.REACT_APP_OPENWEATHERMAP_API_KEY;
@@ -9,9 +9,12 @@ export const fetchWeather = async (weatherData: WeatherCoords): Promise<string |
     return null;
   }
 
-  let url = weatherData.cityName 
-    ? `https://api.openweathermap.org/data/2.5/weather?q=${weatherData.cityName}&appid=${apiKey}&units=metric`
-    : `https://api.openweathermap.org/data/2.5/weather?lat=${weatherData.latitude}&lon=${weatherData.longitude}&appid=${apiKey}&units=metric`;
+  let url;
+  if ('cityName' in weatherData) {
+    url = `https://api.openweathermap.org/data/2.5/weather?q=${weatherData.cityName}&appid=${apiKey}&units=metric`;
+  } else {
+    url = `https://api.openweathermap.org/data/2.5/weather?lat=${weatherData.latitude}&lon=${weatherData.longitude}&appid=${apiKey}&units=metric`;
+  }
   
 
   try {
