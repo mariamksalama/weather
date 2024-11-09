@@ -7,8 +7,6 @@ const Homepage: React.FC = () => {
   useEffect(() => {
     const fetchWeather = async (latitude: number, longitude: number) => {
       const apiKey = process.env.REACT_APP_OPENWEATHERMAP_API_KEY;
-
-      console.log(apiKey);
       const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${apiKey}&units=metric`;
 
       try {
