@@ -1,6 +1,7 @@
 export type WeatherCoords = 
 {longitude: number, latitude:number}|
 {cityName: string};
+
 export type WeatherData={
   city: string;
   temperature: number;
