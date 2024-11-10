@@ -19,15 +19,13 @@ const client = searchClient(process.env.ALGOLIA_APP_ID!, process.env.ALGOLIA_ADM
 app.use(express.json());
 
 const fetchCities = async () => {
-  console.log('Fetching cities from Geonames API');
   const cities = [];
-  const maxRows = 1000;
-  const totalCities = 10000;
+  const maxRows = 100;
+  const totalCities = 1000;
   const username = process.env.GEONAMES_USERNAME;
 
-  for (let startRow = 0; startRow < totalCities; startRow += maxRows) {
-    console.log(username);
-    const url = `http://api.geonames.org/citiesJSON?north=90&south=-90&east=180&west=-180&lang=en&maxRows=1000&startRow=1000&username=mariamksalama`;
+  for (let startRow = 1; startRow < totalCities; startRow += maxRows) {
+    const url = `http://api.geonames.org/citiesJSON?north=90&south=-90&east=180&west=-180&lang=en&maxRows=${maxRows}&startRow=${startRow}&username=${username}`;
     const response = await axios.get(url);
     cities.push(...response.data.geonames);
   }
@@ -36,32 +34,16 @@ const fetchCities = async () => {
 };
 
 const pushToAlgolia = async (cities: any[]) => {
-  const chunkSize = 1000;
-  for (let i = 0; i < cities.length; i += chunkSize) {
-    const chunk = cities.slice(i, i + chunkSize);
-    const cityData = chunk.map(city => ({
-      objectID: city.geonameId,
-      name: city.name,
-      country: city.countryName,
-      latitude: city.lat,
-      longitude: city.lng,
-      population: city.population,
-      highTemperalure: city.highTemperature,
-      lowTemperature: city.lowTemperature,
-    }));
-
+  
     try {
-       await client.saveObjects({ indexName: 'cities', objects: cityData });
+      await client.saveObjects({ indexName: 'citiesWeather', objects: cities });
 
-      console.log(`Cities batch pushed to Algolia: ${i + chunkSize}`);
     } catch (error: any) {
       if (error.response) {
         console.error('Algolia API error:', error.response.data);
       } else {
         console.error('Unknown error:', error.message);
-      }
-    }
-  }
+      }}
 };
 
 const fetchWeatherData = async (latitude: number, longitude: number) => {
@@ -72,18 +54,17 @@ const fetchWeatherData = async (latitude: number, longitude: number) => {
 
 const updateCityTemperatures = async () => {
   try {
-    const { hits: cities } = await  client.searchSingleIndex({ indexName: 'cities'});
+    const { hits: cities } = await  client.searchSingleIndex({ indexName: 'citiesWeather'});
     const updatedCities = await Promise.all(cities.map(async (city: any) => {
-      const weatherData = await fetchWeatherData(city.latitude, city.longitude);
+      const weatherData = await fetchWeatherData(city.lat, city.lng);
       return {
         ...city,
         highTemperature: weatherData.temperature_2m_max[0],
         lowTemperature: weatherData.temperature_2m_min[0],
       };
     }));
-    console.log(updatedCities);
 
-    await client.saveObjects({ indexName: 'cities', objects: updatedCities });
+    await client.saveObjects({ indexName: 'citiesWeather', objects: updatedCities });
 
     console.log('City temperatures updated in Algolia successfully');
   } catch (error: any) {
@@ -93,28 +74,25 @@ const updateCityTemperatures = async () => {
 
 // Schedule the cron job to run every day at midnight
 cron.schedule('0 0 * * *', () => {
-  console.log('Running cron job to update city temperatures');
   updateCityTemperatures();
 });
 
-updateCityTemperatures();
 
-app.get('/api/cities', async (req, res) => {
+
+const updateAlgoliaCities=async () =>{
   try {
     const cities = await fetchCities();
-    console.log(`Fetched ${cities.length} cities`);
     await pushToAlgolia(cities);
-    res.json({ message: 'Cities fetched and pushed to Algolia successfully' });
+    updateCityTemperatures();
+
   } catch (error) {
     if (error instanceof Error) {
-      res.status(500).json({ error: error.message });
-    } else {
-      res.status(500).json({ error: 'An unknown error occurred.' });
-    }
+      console.log(`Error fetching cities: ${error.message}`);
+    } 
   }
-});
+};
+
+updateAlgoliaCities();
 
 
-app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
-});
+app.listen(port, () => {});
