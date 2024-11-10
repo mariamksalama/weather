@@ -11,8 +11,7 @@ dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 3001;
-
-// Initialize Algolia client
+const AlgoliaIndexName = process.env.ALGOLIA_INDEX_NAME!;
 const client = searchClient(process.env.ALGOLIA_APP_ID!, process.env.ALGOLIA_ADMIN_API_KEY!);
 
 
@@ -36,7 +35,7 @@ const fetchCities = async () => {
 const pushToAlgolia = async (cities: any[]) => {
   
     try {
-      await client.saveObjects({ indexName: 'citiesWeather', objects: cities });
+      await client.saveObjects({ indexName: AlgoliaIndexName, objects: cities });
 
     } catch (error: any) {
       if (error.response) {
@@ -54,7 +53,7 @@ const fetchWeatherData = async (latitude: number, longitude: number) => {
 
 const updateCityTemperatures = async () => {
   try {
-    const { hits: cities } = await  client.searchSingleIndex({ indexName: 'citiesWeather'});
+    const { hits: cities } = await  client.searchSingleIndex({ indexName: 'indexNameeather'});
     const updatedCities = await Promise.all(cities.map(async (city: any) => {
       const weatherData = await fetchWeatherData(city.lat, city.lng);
       return {
@@ -64,7 +63,7 @@ const updateCityTemperatures = async () => {
       };
     }));
 
-    await client.saveObjects({ indexName: 'citiesWeather', objects: updatedCities });
+    await client.saveObjects({ indexName: AlgoliaIndexName, objects: updatedCities });
 
     console.log('City temperatures updated in Algolia successfully');
   } catch (error: any) {
