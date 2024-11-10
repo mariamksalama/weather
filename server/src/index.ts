@@ -1,11 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import axios from 'axios';
-import dotenv, { populate } from 'dotenv';
+import dotenv from 'dotenv';
 import cron from 'node-cron';
-
 import { searchClient } from '@algolia/client-search';
-
-
 
 dotenv.config();
 
@@ -17,8 +14,18 @@ const totalCities = 1000;
 
 app.use(express.json());
 
-const fetchCities = async () => {
-  const cities = [];
+interface City {
+  geonameId: string;
+  name: string;
+  countryName: string;
+  lat: number;
+  lng: number;
+  highTemperature?: number;
+  lowTemperature?: number;
+}
+
+const fetchCities = async (): Promise<City[]> => {
+  const cities: City[] = [];
   const maxRows = 100;
   const username = process.env.GEONAMES_USERNAME;
 
@@ -31,57 +38,55 @@ const fetchCities = async () => {
   return cities;
 };
 
-const pushToAlgolia = async (cities: any[]) => {
-  
-    try {
-      await client.saveObjects({ indexName: AlgoliaIndexName, objects: cities });
-
-    } catch (error: any) {
-      if (error.response) {
-        console.error('Algolia API error:', error.response.data);
-      } else {
-        console.error('Unknown error:', error.message);
-      }}
-};
-const fetchCitiesFromAlgolia = async (): Promise<any[]> => {
-  const cities: any[] = [];
-
-    try {
-      console.log('try');
-
-
-      const hits = await client.searchSingleIndex(
-          {
-            indexName: 'citiesWeather',  
-            searchParams: ({
-              query: '',                 
-              hitsPerPage: totalCities, 
-              page: 0,                  
-            }),
-          },
-        
-        
-      );
-      cities.push(...hits.hits);  
-    } catch (error) {
-      console.error('Error fetching cities from Algolia:', error);
+const pushToAlgolia = async (cities: City[]): Promise<void> => {
+  try {
+    await client.saveObjects({ indexName: AlgoliaIndexName, objects: cities as Record<string, any>[] });
+  } catch (error: any) {
+    if (error.response) {
+      console.error('Algolia API error:', error.response.data);
+    } else {
+      console.error('Unknown error:', error.message);
     }
-    return cities;
-  };  
-const fetchWeatherData = async (latitude: number, longitude: number) => {
+  }
+};
+
+const fetchCitiesFromAlgolia = async (): Promise<City[]> => {
+  const cities: City[] = [];
+
+  try {
+    const hits = await client.searchSingleIndex({
+      indexName: AlgoliaIndexName,
+      searchParams: {
+        query: '',                 
+
+        hitsPerPage: totalCities,
+        page: 0,
+      },
+    });
+    hits.hits.map((hit: any) => {
+      const { geonameId, name, countryName, lat, lng, highTemperature, lowTemperature } = hit;
+      cities.push({ geonameId, name, countryName, lat, lng, highTemperature, lowTemperature });
+    });
+
+  } catch (error) {
+    console.error('Error fetching cities from Algolia:', error);
+  }
+
+  return cities;
+};
+
+const fetchWeatherData = async (latitude: number, longitude: number): Promise<any> => {
   const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&daily=temperature_2m_max,temperature_2m_min&timezone=auto`;
   const response = await axios.get(url);
   return response.data.daily;
 };
 
-const updateCityTemperatures = async () => {
-  const maxRetries = 5;
-
+const updateCityTemperatures = async (): Promise<void> => {
   try {
     const cities = await fetchCitiesFromAlgolia();
     for (let i = 0; i < cities.length; i += 100) {
       const chunk = cities.slice(i, i + 100);
-      const updatedCities = await Promise.all(chunk.map(async (city: any) => {
+      const updatedCities = await Promise.all(chunk.map(async (city: City) => {
         const weatherData = await fetchWeatherData(city.lat, city.lng);
         return {
           ...city,
@@ -90,23 +95,12 @@ const updateCityTemperatures = async () => {
         };
       }));
 
-      let retries = 0;
-      while (retries < maxRetries) {
-        try {
-          await client.saveObjects({ indexName: AlgoliaIndexName, objects: updatedCities });
-          console.log(`City temperatures updated in Algolia successfully for chunk starting at index ${i}`);
-          break; // Exit the retry loop on success
-        } catch (error: any) {
-          if (error.response && error.response.status === 429) {
-            retries++;
-            const delay = Math.pow(2, retries) * 1000; // Exponential backoff
-            console.warn(`Rate limit exceeded. Retrying in ${delay / 1000} seconds...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-          } else {
-            console.error(`Error updating city temperatures: ${error.message}`);
-            break; // Exit the retry loop on non-rate-limit errors
-          }
-        }
+      try {
+        await client.saveObjects({ indexName: AlgoliaIndexName, objects: updatedCities});
+        console.log(`City temperatures updated in Algolia successfully for chunk starting at index ${i}`);
+      } catch (error: any) {
+        console.error(`Error updating city temperatures: ${error.message}`);
+        break; 
       }
     }
   } catch (error: any) {
@@ -119,29 +113,25 @@ cron.schedule('0 0 * * *', () => {
   updateCityTemperatures();
 });
 
-
-const updateAlgoliaCities=async () =>{
+app.get('/api/populate-cities', async (req: Request, res: Response) => {
   try {
     const cities = await fetchCities();
     await pushToAlgolia(cities);
-    updateCityTemperatures();
-
+    await updateCityTemperatures();
   } catch (error) {
     if (error instanceof Error) {
       console.log(`Error fetching cities: ${error.message}`);
-    } 
+    }
   }
-};
+});
 
-app.get('/api/hottest-city', async (req: express.Request, res: express.Response) => {
+app.get('/api/hottest-city', async (req: Request, res: Response) => {
   try {
     const cities = await fetchCitiesFromAlgolia();
-
-
-    const hottestCity = cities.reduce((max: any, city: any) =>
+    const hottestCity = cities.reduce((max: City, city: City) =>
       (city.highTemperature! > max.highTemperature! ? city : max), cities[0]);
 
-    res.json(hottestCity); // Respond with the hottest city
+    res.json(hottestCity); 
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
@@ -151,13 +141,13 @@ app.get('/api/hottest-city', async (req: express.Request, res: express.Response)
   }
 });
 
-app.get('/api/coldest-city', async (req: express.Request, res: express.Response) => {
+app.get('/api/coldest-city', async (req: Request, res: Response) => {
   try {
-   const cities = await fetchCitiesFromAlgolia();
-    const coldestCity = cities.reduce((min: any, city: any) =>
+    const cities = await fetchCitiesFromAlgolia();
+    const coldestCity = cities.reduce((min: City, city: City) =>
       (city.lowTemperature! < min.lowTemperature! ? city : min), cities[0]);
 
-    res.json(coldestCity); // Respond with the coldest city
+    res.json(coldestCity); 
   } catch (error) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message });
@@ -167,10 +157,8 @@ app.get('/api/coldest-city', async (req: express.Request, res: express.Response)
   }
 });
 
-//to populate algolia
-// updateAlgoliaCities();
-
-// updateCityTemperatures();
 
 
-app.listen(port, () => {});
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
