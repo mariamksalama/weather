@@ -1,8 +1,8 @@
 import { Box, Stack, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { fetchHourlyWeather, fetchWeather, WeatherData } from '../Weather/weatherUtil';
-import Search from '../Search/search';
+import Search from '../search/search';
 import LottieWeatherAnimation from './lottieWeatherAnimation';
+import { WeatherData, fetchHourlyWeather, fetchWeather } from './weatherUtil';
 
 
 const Weather: React.FC = () => {
