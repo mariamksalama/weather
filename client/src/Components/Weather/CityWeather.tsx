@@ -47,7 +47,6 @@ const CityWeather: React.FC<CityWeatherProps> = ({
   condition,
   nextHour,
 }) => {
-    console.log(nextHour)
   return (
     <Stack sx={{width:'80%', textAlign:'center'}}>
 

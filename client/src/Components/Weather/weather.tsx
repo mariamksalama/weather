@@ -83,10 +83,8 @@ const Weather: React.FC = () => {
 
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
-            console.log(weather.timezone)
             const offsetHours = weather.timezone! / 3600; 
     
-            console.log(offsetHours)
             const currentTimeUtc = moment.utc(); 
     
             const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
@@ -95,7 +93,6 @@ const Weather: React.FC = () => {
     
           
             const nextHourTime = (nextHour.format("YYYY-MM-DDTHH")+':00');
-            console.log(nextHourTime)
 
             let index = data.hourly.time.indexOf(nextHourTime);
             const maxIndex = index+6;
