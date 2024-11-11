@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, FormControlLabel, Stack, Switch, Typography, styled } from '@mui/material';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
-import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
 import Search from '../search/search';
 import CityWeather from './CityWeather';
 import HottestAndColdestCities from './HottestAndColdestCities';
@@ -9,6 +8,7 @@ import darkImage from '../../assets/images/dark.jpg';
 import lightImage from '../../assets/images/light.jpg';
 import SunCalc from 'suncalc';
 import moment from 'moment-timezone';
+import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
 
 const Weather: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);

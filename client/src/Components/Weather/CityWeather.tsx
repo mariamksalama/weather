@@ -1,6 +1,6 @@
 import { Box, Stack, Typography, styled } from "@mui/material";
-import { WeatherData } from "./WeatherUtil";
 import HorizontalScrollDialog from "./HorizontalScrollDialog";
+import { WeatherData } from "./WeatherUtil";
 
 interface CityWeatherProps {
   city: string;
@@ -72,42 +72,6 @@ const CityWeather: React.FC<CityWeatherProps> = ({
             </Stack>
         </Stack>
         <HorizontalScrollDialog hourlyData={nextHour ||[]}/>
-
-
-      {/* <Box
-        sx={{
-          width: "80%",
-          backgroundColor: "white",
-          padding: "8px",
-          borderRadius: "8px",
-          textAlign: "center",
-          border: "4px solid #2a3946",
-        }}
-      >
-        <StyledTypography
-          sx={{
-            fontSize: "1rem",
-            color: "#222",
-            marginBlock: "12px",
-          }}
-        >
-          Your Hourly Weather Update
-        </StyledTypography>
-        <Box display="flex" gap="8px" alignItems="center" justifyContent="space-evenly">
-          <Stack>
-            <StyledTypography variant="body1">Temperature</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.temperature} {localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</StyledTypography>
-          </Stack>
-          <Stack>
-            <StyledTypography variant="body1">Humidity</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.humidity}%</StyledTypography>
-          </Stack>
-          <Stack>
-            <StyledTypography variant="body1">Wind speed</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.wind} m/s</StyledTypography>
-          </Stack>
-        </Box> 
-      </Box> */}
       <WeatherAnimation condition={condition} />
     </StyledStack>
     </Stack>
