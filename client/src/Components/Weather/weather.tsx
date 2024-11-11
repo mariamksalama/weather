@@ -21,6 +21,7 @@ const Weather: React.FC = () => {
   const [nextHour, setNextHour] = useState<WeatherData[]>([]);
   const [isNightTime, setIsNightTime] = useState<boolean>(false);
   const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
+
   const setWeatherInfo = useCallback((weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
     Promise.all([
       fetchWeather(weatherInfo),
@@ -42,7 +43,8 @@ const Weather: React.FC = () => {
       }
       setIsLoading(false);
     });
-  },[ isCelsius]);
+  }, [isCelsius]);
+
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -56,23 +58,21 @@ const Weather: React.FC = () => {
     );
   }, [setWeatherInfo]);
 
-
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isCelsius = event.target.checked;
     localStorage.setItem('temperatureUnit', isCelsius ? 'celsius' : 'fahrenheit');
-
     setIsCelsius(isCelsius);
   };
+
   const checkIfNightTime = (latitude: number, longitude: number) => {
     const times = SunCalc.getTimes(new Date(), latitude, longitude);
     const now = new Date();
-    setIsNightTime( (now < times.sunrise || now > times.sunset));
+    setIsNightTime(now < times.sunrise || now > times.sunset);
   };
 
-  const convertTemperature = (temperature: number, toCelsius: boolean, isCelsius:boolean) => {
-    if(toCelsius && isCelsius)
-      return temperature;
-    const temp= toCelsius ? ((temperature - 32) * 5) / 9 : (temperature * 9) / 5 + 32;
+  const convertTemperature = (temperature: number, toCelsius: boolean, isCelsius: boolean) => {
+    if (toCelsius && isCelsius) return temperature;
+    const temp = toCelsius ? ((temperature - 32) * 5) / 9 : (temperature * 9) / 5 + 32;
     return parseFloat(temp.toFixed(1));
   };
 
@@ -80,29 +80,22 @@ const Weather: React.FC = () => {
     const updateWeather = () => {
       if (latitude && longitude) {
         checkIfNightTime(latitude, longitude);
-
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
-            const offsetHours = weather.timezone! / 3600; 
-    
-            const currentTimeUtc = moment.utc(); 
-    
+            const offsetHours = weather.timezone! / 3600;
+            const currentTimeUtc = moment.utc();
             const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
-    
-            const nextHour = timeInOffset.add(1, "hours");
-    
-          
-            const nextHourTime = (nextHour.format("YYYY-MM-DDTHH")+':00');
+            const nextHour = timeInOffset.add(1, 'hours');
+            const nextHourTime = `${nextHour.format('YYYY-MM-DDTHH')}:00`;
 
             let index = data.hourly.time.indexOf(nextHourTime);
-            const maxIndex = index+6;
+            const maxIndex = index + 6;
             const dataArray = data.hourly;
-            let next6Hours=[];
-            while(index<maxIndex){
-              console.log(index)
+            let next6Hours = [];
+            while (index < maxIndex) {
               next6Hours.push({
                 time: dataArray.time[index],
-                temperature:convertTemperature (dataArray.temperature_2m[index],isCelsius, true),
+                temperature: convertTemperature(dataArray.temperature_2m[index], isCelsius, true),
                 humidity: dataArray.relative_humidity_2m[index],
                 wind: dataArray.wind_speed_10m[index],
                 city: weather.city,
@@ -113,7 +106,6 @@ const Weather: React.FC = () => {
               });
               index++;
             }
-            console.log( next6Hours)
             setNextHour(next6Hours);
           }
         });
@@ -122,9 +114,9 @@ const Weather: React.FC = () => {
 
     updateWeather();
 
-    const intervalId = setInterval(updateWeather, 3600000); 
+    const intervalId = setInterval(updateWeather, 3600000);
 
-    return () => clearInterval(intervalId); 
+    return () => clearInterval(intervalId);
   }, [longitude, latitude, weather, isCelsius]);
 
   const handleSearchSubmit = (city: { lat?: number; lon?: number; name?: string }) => {
@@ -141,11 +133,9 @@ const Weather: React.FC = () => {
     }
   };
 
-
-
   return (
     <WeatherWrapper weatherCondition={condition}>
-       <ToggleWrapper>
+      <ToggleWrapper>
         <FormControlLabel
           control={<Switch checked={isCelsius} onChange={handleToggleChange} />}
           label={isCelsius ? 'Celsius' : 'Fahrenheit'}
@@ -162,47 +152,24 @@ const Weather: React.FC = () => {
               City not found
             </Typography>
           ) : (
-            <Stack sx={{ width: '100%' , display:'flex', alignItems:'center' ,gap:'24px'}}>
-               <Box width='80%' >
-                <Search cityName={cityName} onSubmit={handleSearchSubmit} />
-              </Box>
-              <Box display="flex" gap="8px" alignItems="center" width='100%' justifyContent='center' padding='12px'>
-        
- 
-        <StyledTypography
-          sx={{
-            fontSize: "1.5rem",
-            color: "#222",
-          }}
-          variant="h5"
-        >
-          Now in
-        </StyledTypography>
-        <StyledTypography
-          sx={{
-            fontSize: "2rem",
-            color: "white",
-          }}
-          variant="h5"
-        >
-          {cityName}
-        </StyledTypography>
-          </Box>
-            <InnerBox>
-     
-             
-              {weather && (
-                <CityWeather
-                  city={cityName || ''}
-                  temperature={weather.temperature}
-                  humidity={weather.humidity}
-                  windSpeed={weather.wind}
-                  condition={weather.condition}
-                  nextHour={nextHour}
-                />
-              )}
-              <HottestAndColdestCities />
-            </InnerBox>
+            <Stack sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: '24px' }}>
+               <StickyBox width='80%' >
+               <Search cityName={cityName} onSubmit={handleSearchSubmit} />
+              </StickyBox>
+
+              <InnerBox>
+                {weather && (
+                  <CityWeather
+                    city={cityName || ''}
+                    temperature={weather.temperature}
+                    humidity={weather.humidity}
+                    windSpeed={weather.wind}
+                    condition={weather.condition}
+                    nextHour={nextHour}
+                  />
+                )}
+                <HottestAndColdestCities />
+              </InnerBox>
             </Stack>
           )}
         </ContentStack>
@@ -216,7 +183,6 @@ interface WeatherWrapperProps {
 }
 
 const WeatherWrapper = styled(Box)<WeatherWrapperProps>(({ weatherCondition }) => ({
-
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -224,6 +190,11 @@ const WeatherWrapper = styled(Box)<WeatherWrapperProps>(({ weatherCondition }) =
   transition: 'background 0.3s ease-in-out',
   backgroundColor: '#41657f',
 }));
+
+const StickyBox = styled(Box)({
+  position: 'absolute',
+  top: '50px',
+});
 
 const LoadingBox = styled(Box)({
   position: 'fixed',
@@ -239,6 +210,9 @@ const LoadingBox = styled(Box)({
   paddingBlock: '24px',
 });
 
+
+
+
 const ToggleWrapper = styled(Box)({
   position: 'absolute',
   top: '10px',
@@ -252,6 +226,7 @@ interface ContentStackProps {
 const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   top: 0,
   left: 0,
+  paddingTop: '150px',
   minHeight: '100vh',
   width: '100%',
   backgroundImage: isNightTime?`url(${darkImage})`: `url(${lightImage})`, 
@@ -261,18 +236,10 @@ const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   alignItems: 'center',
   overflow: 'auto',
   paddingBlock: '36px',
-  // overflowX: 'hidden'
 
 })
 );
-const StyledTypography = styled(Typography)(() => ({
-  fontWeight: 600,
-  letterSpacing: "0.05em",
-  textTransform: "uppercase",
-  lineHeight: 1.2,
-  fontFamily: '"Roboto", sans-serif',
-  textShadow: "none",
-}));
+
 
 const InnerBox = styled(Box)({
   display: 'flex',

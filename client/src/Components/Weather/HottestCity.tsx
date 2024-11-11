@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Typography, styled } from '@mui/material';
-import hotImage from '../../assets/images/hot.jpg'; 
+import axios from 'axios';
+import hotImage from '../../assets/images/hot.jpg'; // Adjust for correct image path
 
 const BackgroundBox = styled(Box)({
-  width: '48%',
+  width: '100%', 
   height: '200px',
   backgroundImage: `url(${hotImage})`, 
   backgroundSize: 'cover',
@@ -15,6 +16,24 @@ const BackgroundBox = styled(Box)({
   textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
   borderRadius: '8px',
   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+  position: 'relative', // Ensure we can position the banner inside this box
+});
+
+const Banner = styled(Box)({
+  position: 'absolute', 
+  top: 0,
+  left: 0,
+  width: '100%',
+  backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  color: '#fff',
+   paddingBlock: '8px',
+  textAlign: 'center',
+  fontSize: '0.8rem',
+  fontWeight: 600,
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+  borderTopLeftRadius: '8px',
+  borderTopRightRadius: '8px',
 });
 
 interface CityData {
@@ -29,23 +48,17 @@ const HottestCity: React.FC = () => {
 
   useEffect(() => {
     const fetchCityData = async () => {
-        try {
-          const response = await fetch('http://localhost:3001/api/hottest-city');
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          const data = await response.json();
-          console.log('API response:', data);
-          setCityData({ name: data.name, temperature: data.highTemperature });
-          setLoading(false);
-        } catch (err) {
-          console.error('API call failed:', err);
-          setError('Failed to fetch city data');
-          setLoading(false);
-        }
-      };
-  
-      fetchCityData();
+      try {
+        const response = await axios.get('http://localhost:3001/api/hottest-city');
+        setCityData({name: response.data.name, temperature: response.data.highTemperature});
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch city data');
+        setLoading(false);
+      }
+    };
+
+    fetchCityData();
   }, []);
 
   if (loading) {
@@ -58,6 +71,7 @@ const HottestCity: React.FC = () => {
 
   return (
     <BackgroundBox>
+      <Banner>Hottest Around the World</Banner>
       {cityData && (
         <Box textAlign="center">
           <Typography variant="h4">{cityData.name}</Typography>

@@ -55,11 +55,14 @@ const CityWeather: React.FC<CityWeatherProps> = ({
     <StyledStack>
         
      
-        <Stack display='flex'   width='80%' justifyContent='space-evenly'   height='250px' marginBlock='12px'>
+        <Stack display='flex'   width='80%' justifyContent='space-evenly'   height='fit-content' marginBlock='12px'>
+       
             <Box textAlign='left' >
+            <TitleTypography >{city}</TitleTypography>
+
             <TitleTypography >{temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</TitleTypography>
             </Box>
-            <Stack display='flex' alignItems='flex-start'  height='80px' gap='12px' padding='24px'>
+            <Stack display='flex' alignItems='flex-start'   gap='12px' padding='24px'>
             <DataBox display='flex' gap='8px'>
                 <StyledTypography variant="body1" sx={{color:'grey'}}>Humidity</StyledTypography>
                 <StyledTypography variant="body2" sx={{color:'white'}}> {humidity}%</StyledTypography>
