@@ -55,14 +55,7 @@ const Weather: React.FC = () => {
       }
     );
   }, [setWeatherInfo]);
-  useEffect(() => {
-    if (weather) {
-      setWeather({
-        ...weather,
-        temperature: convertTemperature(weather.temperature, isCelsius,false),
-      });
-    }
-  },[isCelsius])
+
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isCelsius = event.target.checked;
