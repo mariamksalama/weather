@@ -27,15 +27,18 @@ export const searchAlgolia = async (query: string, hitsPerPage: number, page: nu
       searchParams: {
         query:'',
         hitsPerPage,
-        page,
+        page:0,
       },
     });
+    console.log(result.hits.length);
     cities.push(...result.hits.map((hit: any) => ({
       objectID: hit.objectID,
       name: hit.name,
       lat: hit.lat,
       lng: hit.lng,
-      population: hit.population
+      population: hit.population,
+      highTemperature: hit.highTemperature,
+      lowTemperature: hit.lowTemperature,
     })));
   } catch (error) {
     console.error('Error fetching cities from Algolia:', error);

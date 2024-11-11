@@ -5,7 +5,7 @@ import Weather from '../weather/Weather';
 const Homepage: React.FC = () => {
 
   return (
-    <Box>
+    <Box >
       <Weather/>
     </Box>
   );

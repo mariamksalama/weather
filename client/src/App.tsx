@@ -4,7 +4,7 @@ import { Box } from '@mui/material';
 import Homepage from './Components/homepage/Homepage';
 
 const App: React.FC = () => (
-  <Box padding='24px'>
+  <Box >
     <Homepage />
   </Box>
 );

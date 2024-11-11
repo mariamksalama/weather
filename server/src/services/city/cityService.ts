@@ -15,7 +15,6 @@ export const fetchCities = async (): Promise<City[]> => {
 
     const url = `http://api.geonames.org/citiesJSON?north=90&south=-90&east=180&west=-180&lang=en&maxRows=500&startRow=1&username=${username}`;
     const response = await axios.get(url);
-    console.log(response.data.geonames);
     cities.push(...response.data.geonames);
   
 

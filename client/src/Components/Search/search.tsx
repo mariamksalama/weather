@@ -14,12 +14,12 @@ const searchClient = algoliasearch('P1O884D4FU', 'a8ff75dbd1a9f9ff11141220a58848
 const SearchForm = styled('form')({
   display: 'flex',
   justifyContent: 'center',
-  marginTop: '20px',
+  width: '80%',
 });
 
 const SearchInput = styled(TextField)({
   width: '100%',
-  maxWidth: '400px',
+
 });
 
 const Hit = ({ hit, onClick }: any) => (
@@ -50,7 +50,7 @@ const Search: React.FC<SearchProps> = ({ onSubmit }) => {
           transition
           sx={{
             position: 'absolute',
-            zIndex: 1300, 
+            // zIndex: 1300, 
             marginTop: 1, 
           }}
           modifiers={[
@@ -110,9 +110,11 @@ const Search: React.FC<SearchProps> = ({ onSubmit }) => {
       onSubmit({ name: currentRefinement})};
 
     return (
-      <SearchForm onSubmit={handleSubmit}
+      <SearchForm    sx={{backgroundColor:'#2a3946', borderRadius:'4px', boxShadow: 3, padding: '8px'}}
+      onSubmit={handleSubmit}
 >
         <SearchInput
+         sx={{backgroundColor:'white', borderRadius:'4px'}}
           value={currentRefinement}
           onChange={handleSearchChange}
           variant="outlined"
@@ -124,7 +126,7 @@ const Search: React.FC<SearchProps> = ({ onSubmit }) => {
   });
 
   return (
-    <Box width='100%' display='flex' justifyContent='center' sx={{ position: 'relative' }}>
+    <Box width='100%' display='flex' justifyContent='center' sx={{ position: 'relative',  }}>
       <InstantSearch indexName="citiesWeather" searchClient={searchClient}>
         <CustomSearchBox />
         <CustomHits />

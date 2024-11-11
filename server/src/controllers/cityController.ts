@@ -4,6 +4,7 @@ import { fetchCities, pushToAlgolia, updateCityTemperatures, fetchCitiesFromAlgo
 export const populateCities = async (req: Request, res: Response) => {
   try {
     const cities = await fetchCities();
+    console.log('cairo',cities.filter(city=>city.name=='Cairo').length)
     await pushToAlgolia(cities);
     await updateCityTemperatures();
     res.json({ message: 'Cities populated and temperatures updated successfully' });
@@ -20,7 +21,8 @@ export const populateCities = async (req: Request, res: Response) => {
 export const getHottestCity = async (req: Request, res: Response) => {
   try {
     const cities = await fetchCitiesFromAlgolia();
-    const hottestCity = cities.reduce((max, city) =>
+    const filteredCities = cities.filter((city)=>city.highTemperature!=null&& city.highTemperature!=undefined && city.highTemperature.toString()!=='undefined');
+    const hottestCity = filteredCities.reduce((max, city) =>
       (city.highTemperature! > max.highTemperature! ? city : max), cities[0]);
 
     res.json(hottestCity);
@@ -36,7 +38,9 @@ export const getHottestCity = async (req: Request, res: Response) => {
 export const getColdestCity = async (req: Request, res: Response) => {
   try {
     const cities = await fetchCitiesFromAlgolia();
-    const coldestCity = cities.reduce((min, city) =>
+    const filteredCities = cities.filter((city)=>city.lowTemperature!=null&& city.lowTemperature!=undefined && city.lowTemperature.toString()!=='undefined');
+
+    const coldestCity = filteredCities.reduce((min, city) =>
       (city.lowTemperature! < min.lowTemperature! ? city : min), cities[0]);
 
     res.json(coldestCity);
