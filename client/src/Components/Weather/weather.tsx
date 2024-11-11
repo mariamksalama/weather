@@ -8,7 +8,7 @@ import HottestAndColdestCities from './HottestAndColdestCities';
 import darkImage from '../../assets/images/dark.jpg';
 import lightImage from '../../assets/images/light.jpg';
 import SunCalc from 'suncalc';
-import { IndexKind } from 'typescript';
+import moment from 'moment-timezone';
 
 const Weather: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -69,8 +69,20 @@ const Weather: React.FC = () => {
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
             const now = new Date();
-            const nextHour = new Date(now.getTime() + 60 * 60 * 1000); 
-            const nextHourTime = nextHour.toISOString().slice(0, 13) + ':00';
+            console.log(weather.timezone)
+            const offsetHours = weather.timezone! / 3600; 
+    
+            console.log(offsetHours)
+            const currentTimeUtc = moment.utc(); 
+    
+            const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
+    
+            const nextHour = timeInOffset.add(1, "hours");
+    
+          
+            const nextHourTime = (nextHour.format("YYYY-MM-DDTHH")+':00');
+            console.log(nextHourTime)
+
             let index = data.hourly.time.indexOf(nextHourTime);
             const maxIndex = index+6;
             const dataArray = data.hourly;
