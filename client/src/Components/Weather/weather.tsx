@@ -252,6 +252,7 @@ interface ContentStackProps {
 const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   top: 0,
   left: 0,
+  height: '100vh',
   width: '100%',
   backgroundImage: isNightTime?`url(${darkImage})`: `url(${lightImage})`, 
   backgroundSize: 'cover',
