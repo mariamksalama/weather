@@ -68,7 +68,6 @@ const Weather: React.FC = () => {
 
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
-            const now = new Date();
             console.log(weather.timezone)
             const offsetHours = weather.timezone! / 3600; 
     
@@ -114,7 +113,7 @@ const Weather: React.FC = () => {
     const intervalId = setInterval(updateWeather, 3600000); 
 
     return () => clearInterval(intervalId); 
-  }, [longitude, latitude, weather]);
+  }, [longitude, latitude, weather, isCelsius]);
 
   const handleSearchSubmit = (city: { lat?: number; lon?: number; name?: string }) => {
     setIsLoading(true);

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
 import { InstantSearch, connectSearchBox, connectStateResults } from 'react-instantsearch-dom';
 import { Box, TextField, Paper, List, ListItem, ListItemText, Button, Popper } from '@mui/material';
-import { Stack, styled } from '@mui/system';
+import {  styled } from '@mui/system';
 
 interface SearchProps {
   cityName: string | null;
