@@ -104,7 +104,7 @@ const Search: React.FC<SearchProps> = ({ onSubmit }) => {
       onSubmit({ name: currentRefinement})};
 
     return (
-      <SearchForm    sx={{backgroundColor:'#2a3946', borderRadius:'4px', boxShadow: 3, padding: '8px'}}
+      <SearchForm   
       onSubmit={handleSubmit}
 >
         <SearchInput

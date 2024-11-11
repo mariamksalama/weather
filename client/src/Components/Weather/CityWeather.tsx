@@ -12,13 +12,13 @@ interface CityWeatherProps {
 }
 
 const StyledStack = styled(Stack)({
-  width: "75%",
   padding: "24px",
   display: "flex",
   alignItems: "center",
   borderRadius: "18px",
   position: "relative",
   zIndex: 1,
+  maxWidth: "90vw",
   backgroundColor: "#ffffff59",
   gap: "12px",
 });
@@ -48,14 +48,14 @@ const CityWeather: React.FC<CityWeatherProps> = ({
   nextHour,
 }) => {
   return (
-    <Stack sx={{width:'80%', textAlign:'center'}}>
+    <Stack sx={{ textAlign:'center'}}>
 
 
         
     <StyledStack>
         
      
-        <Stack display='flex'   width='80%' justifyContent='space-evenly'   height='250px'>
+        <Stack display='flex'   width='80%' justifyContent='space-evenly'   height='250px' marginBlock='12px'>
             <Box textAlign='left' >
             <TitleTypography >{temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</TitleTypography>
             </Box>
@@ -70,6 +70,7 @@ const CityWeather: React.FC<CityWeatherProps> = ({
                 </DataBox>
             </Stack>
         </Stack>
+       
         <HorizontalScrollDialog hourlyData={nextHour ||[]}/>
       <WeatherAnimation condition={condition} />
     </StyledStack>

@@ -187,7 +187,7 @@ const Weather: React.FC = () => {
         >
           {cityName}
         </StyledTypography>
-      </Box>
+          </Box>
             <InnerBox>
      
              
@@ -252,7 +252,7 @@ interface ContentStackProps {
 const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   top: 0,
   left: 0,
-  height: '100vh',
+  minHeight: '100vh',
   width: '100%',
   backgroundImage: isNightTime?`url(${darkImage})`: `url(${lightImage})`, 
   backgroundSize: 'cover',
@@ -261,7 +261,7 @@ const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   alignItems: 'center',
   overflow: 'auto',
   paddingBlock: '36px',
-  overflowX: 'hidden'
+  // overflowX: 'hidden'
 
 })
 );
@@ -275,9 +275,14 @@ const StyledTypography = styled(Typography)(() => ({
 }));
 
 const InnerBox = styled(Box)({
-  marginInline: '5%',
-
-  display: 'flex'
+  display: 'flex',
+  alignItems: 'center',
+  width: '80%',
+  gap: '24px',
+  flexDirection: 'column',
+  '@media (min-width: 1100px)': {
+    flexDirection: 'row',
+  },
 });
 
 export default Weather;
