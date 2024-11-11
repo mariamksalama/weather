@@ -15,7 +15,7 @@ const StyledStack = styled(Stack)({
   padding: "24px",
   display: "flex",
   alignItems: "center",
-  borderRadius: "5px",
+  borderRadius: "8px",
   position: "relative",
   zIndex: 1,
   backgroundColor: "#ffffff59",
@@ -61,7 +61,7 @@ const CityWeather: React.FC<CityWeatherProps> = ({
           {city}
         </StyledTypography>
       </Box>
-      <StyledTypography variant="body1">Temperature: {temperature}°C</StyledTypography>
+      <StyledTypography variant="body1">Temperature: {temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</StyledTypography>
       <StyledTypography variant="body1">Humidity: {humidity}%</StyledTypography>
       <StyledTypography variant="body1">Wind Speed: {windSpeed} m/s</StyledTypography>
       <Box
@@ -69,7 +69,7 @@ const CityWeather: React.FC<CityWeatherProps> = ({
           width: "80%",
           backgroundColor: "white",
           padding: "8px",
-          borderRadius: "5px",
+          borderRadius: "8px",
           textAlign: "center",
           border: "4px solid #2a3946",
         }}
@@ -86,7 +86,7 @@ const CityWeather: React.FC<CityWeatherProps> = ({
         <Box display="flex" gap="8px" alignItems="center" justifyContent="space-evenly">
           <Stack>
             <StyledTypography variant="body1">Temperature</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.temperature} °C</StyledTypography>
+            <StyledTypography variant="body2">{nextHour?.temperature} {localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</StyledTypography>
           </Stack>
           <Stack>
             <StyledTypography variant="body1">Humidity</StyledTypography>

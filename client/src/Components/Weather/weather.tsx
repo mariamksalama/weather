@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Stack, Typography, styled } from '@mui/material';
+import { Box, FormControlLabel, Stack, Switch, Typography, styled } from '@mui/material';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
 import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
 import Search from '../search/search';
@@ -15,7 +15,7 @@ const Weather: React.FC = () => {
   const [condition, setCondition] = useState<string>('clear');
   const [wrongCityName, setWrongCityName] = useState<boolean>(false);
   const [nextHour, setNextHour] = useState<WeatherData>();
-
+  const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -28,6 +28,27 @@ const Weather: React.FC = () => {
       }
     );
   }, []);
+  useEffect(() => {
+    if (weather) {
+      setWeather({
+        ...weather,
+        temperature: convertTemperature(weather.temperature, isCelsius,false),
+      });
+    }
+  },[isCelsius])
+
+  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isCelsius = event.target.checked;
+    localStorage.setItem('temperatureUnit', isCelsius ? 'celsius' : 'fahrenheit');
+
+    setIsCelsius(isCelsius);
+  };
+  const convertTemperature = (temperature: number, toCelsius: boolean, isCelsius:boolean) => {
+    if(toCelsius && isCelsius)
+      return temperature;
+    const temp= toCelsius ? ((temperature - 32) * 5) / 9 : (temperature * 9) / 5 + 32;
+    return parseFloat(temp.toFixed(1));
+  };
 
   useEffect(() => {
     const updateWeather = () => {
@@ -40,7 +61,7 @@ const Weather: React.FC = () => {
             const index = data.hourly.time.indexOf(nextHourTime);
             const dataArray = data.hourly;
             setNextHour({
-              temperature: dataArray.temperature_2m[index],
+              temperature:convertTemperature (dataArray.temperature_2m[index],isCelsius, true),
               humidity: dataArray.relative_humidity_2m[index],
               wind: dataArray.wind_speed_10m[index],
               city: weather.city,
@@ -80,7 +101,10 @@ const Weather: React.FC = () => {
       new Promise((resolve) => setTimeout(resolve, 2000)),
     ]).then(([weather]) => {
       if (weather) {
-        setWeather(weather);
+        setWeather({
+          ...weather,
+          temperature: convertTemperature(weather.temperature, isCelsius, true),
+        });
         setCityName(weather.city);
         setLongitude(weather.longitude);
         setLatitude(weather.latitude);
@@ -96,6 +120,12 @@ const Weather: React.FC = () => {
 
   return (
     <WeatherWrapper weatherCondition={condition}>
+       <ToggleWrapper>
+        <FormControlLabel
+          control={<Switch checked={isCelsius} onChange={handleToggleChange} />}
+          label={isCelsius ? 'Celsius' : 'Fahrenheit'}
+        />
+      </ToggleWrapper>
       {isLoading ? (
         <LoadingBox>
           <LottieWeatherAnimation />
@@ -135,8 +165,7 @@ interface WeatherWrapperProps {
 }
 
 const WeatherWrapper = styled(Box)<WeatherWrapperProps>(({ weatherCondition }) => ({
-  height: '100vh',
-  width: '100vw',
+
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
@@ -157,6 +186,12 @@ const LoadingBox = styled(Box)({
   alignItems: 'center',
   overflow: 'auto',
   paddingBlock: '24px',
+});
+
+const ToggleWrapper = styled(Box)({
+  position: 'absolute',
+  top: '10px',
+  right: '10px',
 });
 
 const ContentStack = styled(Stack)({

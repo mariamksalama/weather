@@ -4,17 +4,17 @@ import HottestCity from "./HottestCity";
 
 const StyledStack = styled(Stack)({
   width: '80%',
-  padding: '24px',
+  paddingInline: '24px',
   backgroundColor: '#ffffff59',
   display: 'flex',
   alignItems: 'center',
-  borderRadius: '5px',
+  borderRadius: '8px',
   gap: '12px',
 });
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
-  fontSize: '1.25rem', 
+  fontSize: '1.15rem', 
   letterSpacing: '0.05em',
   textTransform: 'uppercase',
   lineHeight: 1.2,
@@ -22,6 +22,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
   fontFamily: '"Roboto", sans-serif',
   textShadow: 'none',
   textAlign: 'center',
+   marginTop:'24px'
 }));
 
 const StyledBox = styled(Box)({
@@ -29,12 +30,13 @@ const StyledBox = styled(Box)({
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'center',
-  padding: '24px',
+   padding: '12px',
+   paddingBottom:'24px'
 });
 
 const HottestAndColdestCities: React.FC = () => (
   <StyledStack>
-    <StyledTypography variant='h5'>
+    <StyledTypography variant='body1'>
       Around the World: Hottest and Coldest Cities of the Day
     </StyledTypography>
     <StyledBox>

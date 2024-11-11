@@ -45,13 +45,13 @@ const Search: React.FC<SearchProps> = ({ onSubmit }) => {
         <Popper
           open={Boolean(searchState.query && searchState.query.length > 0)}
           anchorEl={anchorEl}
-          placement="bottom-start"
           disablePortal={false} 
           transition
           sx={{
-            position: 'absolute',
-            // zIndex: 1300, 
-            marginTop: 1, 
+            marginTop: 15, 
+            marginLeft: '20%',
+            width:'60%',
+            zIndex:2
           }}
           modifiers={[
             {
@@ -61,13 +61,7 @@ const Search: React.FC<SearchProps> = ({ onSubmit }) => {
                 tether: true,
                 rootBoundary: 'viewport', 
               },
-            },
-            {
-              name: 'offset',
-              options: {
-                offset: [0, 8],  
-              },
-            },
+            }
           ]}
         >
           {({ TransitionProps }) => (
