@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, FormControlLabel, Stack, Switch, Typography, styled } from '@mui/material';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
 import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
@@ -21,6 +21,29 @@ const Weather: React.FC = () => {
   const [nextHour, setNextHour] = useState<WeatherData[]>([]);
   const [isNightTime, setIsNightTime] = useState<boolean>(false);
   const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
+  const setWeatherInfo = useCallback((weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
+    Promise.all([
+      fetchWeather(weatherInfo),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]).then(([weather]) => {
+      if (weather) {
+        setWeather({
+          ...weather,
+          temperature: convertTemperature(weather.temperature, isCelsius, true),
+        });
+        setCityName(weather.city);
+        setLongitude(weather.longitude);
+        setLatitude(weather.latitude);
+        setCondition(weather.condition);
+        setWrongCityName(false);
+      } else {
+        setWeather(null);
+        setWrongCityName(true);
+      }
+      setIsLoading(false);
+    });
+  }, [isCelsius]);
+     
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -32,7 +55,7 @@ const Weather: React.FC = () => {
         console.error('Error fetching geolocation:', error);
       }
     );
-  }, []);
+  }, [setWeatherInfo]);
   useEffect(() => {
     if (weather) {
       setWeather({
@@ -40,7 +63,7 @@ const Weather: React.FC = () => {
         temperature: convertTemperature(weather.temperature, isCelsius,false),
       });
     }
-  },[isCelsius])
+  },[isCelsius, weather])
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isCelsius = event.target.checked;
@@ -68,8 +91,6 @@ const Weather: React.FC = () => {
 
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
-            const now = new Date();
-            console.log(weather.timezone)
             const offsetHours = weather.timezone! / 3600; 
     
             console.log(offsetHours)
@@ -114,7 +135,7 @@ const Weather: React.FC = () => {
     const intervalId = setInterval(updateWeather, 3600000); 
 
     return () => clearInterval(intervalId); 
-  }, [longitude, latitude, weather]);
+  }, [longitude, latitude, weather, isCelsius]);
 
   const handleSearchSubmit = (city: { lat?: number; lon?: number; name?: string }) => {
     setIsLoading(true);
@@ -130,28 +151,6 @@ const Weather: React.FC = () => {
     }
   };
 
-  const setWeatherInfo = (weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
-    Promise.all([
-      fetchWeather(weatherInfo),
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-    ]).then(([weather]) => {
-      if (weather) {
-        setWeather({
-          ...weather,
-          temperature: convertTemperature(weather.temperature, isCelsius, true),
-        });
-        setCityName(weather.city);
-        setLongitude(weather.longitude);
-        setLatitude(weather.latitude);
-        setCondition(weather.condition);
-        setWrongCityName(false);
-      } else {
-        setWeather(null);
-        setWrongCityName(true);
-      }
-      setIsLoading(false);
-    });
-  };
 
   return (
     <WeatherWrapper weatherCondition={condition}>
