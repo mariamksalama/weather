@@ -48,14 +48,14 @@ const CityWeather: React.FC<CityWeatherProps> = ({
   nextHour,
 }) => {
   return (
-    <Stack sx={{width:'80%', textAlign:'center'}}>
+    <Stack sx={{ width:'80%', textAlign:'center'}}>
 
 
         
     <StyledStack>
         
      
-        <Stack display='flex' width='80%' justifyContent='space-evenly'   height='250px'>
+        <Stack display='flex'   width='80%' justifyContent='space-evenly'   height='250px'>
             <Box textAlign='left' >
             <TitleTypography >{temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</TitleTypography>
             </Box>

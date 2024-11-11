@@ -188,7 +188,6 @@ const Weather: React.FC = () => {
           {cityName}
         </StyledTypography>
       </Box>
-              <></>
             <InnerBox>
      
              
@@ -261,6 +260,8 @@ const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   alignItems: 'center',
   overflow: 'auto',
   paddingBlock: '36px',
+  overflowX: 'hidden'
+
 })
 );
 const StyledTypography = styled(Typography)(() => ({
@@ -273,10 +274,9 @@ const StyledTypography = styled(Typography)(() => ({
 }));
 
 const InnerBox = styled(Box)({
-  display: 'flex',
-  alignItems: 'center',
-  width: '80%',
-  gap: '24px',
+  marginInline: '5%',
+
+  display: 'flex'
 });
 
 export default Weather;
