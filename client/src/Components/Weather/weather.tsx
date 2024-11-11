@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { Box, FormControlLabel, Stack, Switch, Typography, styled } from '@mui/material';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
 import Search from '../search/search';
@@ -21,6 +21,28 @@ const Weather: React.FC = () => {
   const [nextHour, setNextHour] = useState<WeatherData[]>([]);
   const [isNightTime, setIsNightTime] = useState<boolean>(false);
   const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
+  const setWeatherInfo = useCallback((weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
+    Promise.all([
+      fetchWeather(weatherInfo),
+      new Promise((resolve) => setTimeout(resolve, 2000)),
+    ]).then(([weather]) => {
+      if (weather) {
+        setWeather({
+          ...weather,
+          temperature: convertTemperature(weather.temperature, isCelsius, true),
+        });
+        setCityName(weather.city);
+        setLongitude(weather.longitude);
+        setLatitude(weather.latitude);
+        setCondition(weather.condition);
+        setWrongCityName(false);
+      } else {
+        setWeather(null);
+        setWrongCityName(true);
+      }
+      setIsLoading(false);
+    });
+  },[ isCelsius]);
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
@@ -32,7 +54,7 @@ const Weather: React.FC = () => {
         console.error('Error fetching geolocation:', error);
       }
     );
-  }, []);
+  }, [setWeatherInfo]);
   useEffect(() => {
     if (weather) {
       setWeather({
@@ -129,28 +151,7 @@ const Weather: React.FC = () => {
     }
   };
 
-  const setWeatherInfo = (weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
-    Promise.all([
-      fetchWeather(weatherInfo),
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-    ]).then(([weather]) => {
-      if (weather) {
-        setWeather({
-          ...weather,
-          temperature: convertTemperature(weather.temperature, isCelsius, true),
-        });
-        setCityName(weather.city);
-        setLongitude(weather.longitude);
-        setLatitude(weather.latitude);
-        setCondition(weather.condition);
-        setWrongCityName(false);
-      } else {
-        setWeather(null);
-        setWrongCityName(true);
-      }
-      setIsLoading(false);
-    });
-  };
+
 
   return (
     <WeatherWrapper weatherCondition={condition}>
