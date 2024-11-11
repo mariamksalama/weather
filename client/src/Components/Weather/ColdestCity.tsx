@@ -5,7 +5,7 @@ import coldImage from '../../assets/images/cold.jpg';
 
 const BackgroundBox = styled(Box)({
   width: '48%',
-  height: '300px',
+  height: '200px',
   backgroundImage: `url(${coldImage})`, 
   backgroundSize: 'cover',
   backgroundPosition: 'center',

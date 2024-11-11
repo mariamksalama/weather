@@ -4,7 +4,7 @@ import hotImage from '../../assets/images/hot.jpg';
 
 const BackgroundBox = styled(Box)({
   width: '48%',
-  height: '300px',
+  height: '200px',
   backgroundImage: `url(${hotImage})`, 
   backgroundSize: 'cover',
   backgroundPosition: 'center',
