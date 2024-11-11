@@ -1,8 +1,8 @@
 import { Box, Stack, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import Search from '../search/Search';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
 import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
+import Search from '../search/search';
 
 
 const Weather: React.FC = () => {
@@ -11,6 +11,7 @@ const Weather: React.FC = () => {
   const [cityName, setCityName] = useState<string | null>(null);
   const [longitude, setLongitude] = useState<number >(0);
   const [latitude, setLatitude] = useState<number >(0);
+  const [wrongCityName, setWrongCityName] = useState<boolean>(false);
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -27,16 +28,24 @@ const Weather: React.FC = () => {
     fetchHourlyWeather({longitude,latitude}).then(data => {console.log(data)});
   }, [longitude,latitude]);
   
-  const handleSearchSubmit = (cityName: string) => {
+  const handleSearchSubmit = (city:{lat?:number, lon?:number, name?: string}) => {
+    console.log('in', city)
     setIsLoading(true);
-    setCityName(cityName);
-    setWeatherInfo({cityName});
+    console.log(city);
+
+    if (city.lat !== undefined && city.lon !== undefined) {
+      setLatitude(city.lat);
+      setLongitude(city.lon);
+      setWeatherInfo({ longitude: city.lon, latitude: city.lat });
+    } else if (city.name) {
+      setCityName(city.name);
+      setWeatherInfo({ cityName: city.name });
+    }
    
    
   };
 
-  const setWeatherInfo = (weatherInfo: {longitude: number, latitude:number}|
-    {cityName: string}
+  const setWeatherInfo = (weatherInfo: {longitude: number, latitude:number}|{cityName: string}
   ) => {
     Promise.all([
         fetchWeather(weatherInfo),
@@ -47,9 +56,11 @@ const Weather: React.FC = () => {
           setCityName(weather.city);
           setLongitude(weather.longitude);
           setLatitude(weather.latitude);
+          setWrongCityName(false);
 
         } else {
           setWeather(null);
+          setWrongCityName(true);
         }
         setIsLoading(false);
       });
