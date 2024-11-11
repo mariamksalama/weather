@@ -137,6 +137,7 @@ const Weather: React.FC = () => {
     <WeatherWrapper weatherCondition={condition}>
       <ToggleWrapper>
         <FormControlLabel
+        sx={{color:'white'}}
           control={<Switch checked={isCelsius} onChange={handleToggleChange} />}
           label={isCelsius ? 'Celsius' : 'Fahrenheit'}
         />
@@ -153,8 +154,9 @@ const Weather: React.FC = () => {
             </Typography>
           ) : (
             <Stack sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: '24px' }}>
-               <StickyBox width='80%' >
-               <Search cityName={cityName} onSubmit={handleSearchSubmit} />
+              {/* Search Bar as Sticky */}
+              <StickyBox>
+                <Search cityName={cityName} onSubmit={handleSearchSubmit} />
               </StickyBox>
 
               <InnerBox>
@@ -192,9 +194,16 @@ const WeatherWrapper = styled(Box)<WeatherWrapperProps>(({ weatherCondition }) =
 }));
 
 const StickyBox = styled(Box)({
-  position: 'absolute',
-  top: '50px',
-});
+  position: 'sticky',
+  top: '0',
+  width: '100%', 
+  zIndex: 1000,
+  padding: '10px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  borderRadius: '8px', });
+
 
 const LoadingBox = styled(Box)({
   position: 'fixed',
