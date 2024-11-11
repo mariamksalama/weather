@@ -1,10 +1,8 @@
 export interface City {
-    geonameId: string;
+    objectID?: string;
     name: string;
-    countryName: string;
     lat: number;
     lng: number;
-    population: number;
     highTemperature?: number;
     lowTemperature?: number;
   }

@@ -31,9 +31,8 @@ export const searchAlgolia = async (query: string, hitsPerPage: number, page: nu
       },
     });
     cities.push(...result.hits.map((hit: any) => ({
-      geonameId: hit.objectID,
+      objectID: hit.objectID,
       name: hit.name,
-      countryName: hit.countryName,
       lat: hit.lat,
       lng: hit.lng,
       population: hit.population
