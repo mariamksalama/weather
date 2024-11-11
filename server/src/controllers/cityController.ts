@@ -4,13 +4,11 @@ import { fetchCities, pushToAlgolia, updateCityTemperatures, fetchCitiesFromAlgo
 export const populateCities = async (req: Request, res: Response) => {
   try {
     const cities = await fetchCities();
-    console.log('cairo',cities.filter(city=>city.name=='Cairo').length)
     await pushToAlgolia(cities);
     await updateCityTemperatures();
     res.json({ message: 'Cities populated and temperatures updated successfully' });
   } catch (error) {
     if (error instanceof Error) {
-      console.log(`Error fetching cities: ${error.message}`);
       res.status(500).json({ error: error.message });
     } else {
       res.status(500).json({ error: 'An unknown error occurred.' });

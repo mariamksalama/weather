@@ -5,6 +5,10 @@ import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
 import Search from '../search/search';
 import CityWeather from './CityWeather';
 import HottestAndColdestCities from './HottestAndColdestCities';
+import darkImage from '../../assets/images/dark.jpg';
+import lightImage from '../../assets/images/light.jpg';
+import SunCalc from 'suncalc';
+import { IndexKind } from 'typescript';
 
 const Weather: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -14,7 +18,8 @@ const Weather: React.FC = () => {
   const [latitude, setLatitude] = useState<number>(0);
   const [condition, setCondition] = useState<string>('clear');
   const [wrongCityName, setWrongCityName] = useState<boolean>(false);
-  const [nextHour, setNextHour] = useState<WeatherData>();
+  const [nextHour, setNextHour] = useState<WeatherData[]>([]);
+  const [isNightTime, setIsNightTime] = useState<boolean>(false);
   const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -43,6 +48,12 @@ const Weather: React.FC = () => {
 
     setIsCelsius(isCelsius);
   };
+  const checkIfNightTime = (latitude: number, longitude: number) => {
+    const times = SunCalc.getTimes(new Date(), latitude, longitude);
+    const now = new Date();
+    setIsNightTime( (now < times.sunrise || now > times.sunset));
+  };
+
   const convertTemperature = (temperature: number, toCelsius: boolean, isCelsius:boolean) => {
     if(toCelsius && isCelsius)
       return temperature;
@@ -53,23 +64,34 @@ const Weather: React.FC = () => {
   useEffect(() => {
     const updateWeather = () => {
       if (latitude && longitude) {
+        checkIfNightTime(latitude, longitude);
+
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
             const now = new Date();
-            const nextHour = new Date(now.getTime() + 60 * 60 * 1000); // Add one hour
+            const nextHour = new Date(now.getTime() + 60 * 60 * 1000); 
             const nextHourTime = nextHour.toISOString().slice(0, 13) + ':00';
-            const index = data.hourly.time.indexOf(nextHourTime);
+            let index = data.hourly.time.indexOf(nextHourTime);
+            const maxIndex = index+6;
             const dataArray = data.hourly;
-            setNextHour({
-              temperature:convertTemperature (dataArray.temperature_2m[index],isCelsius, true),
-              humidity: dataArray.relative_humidity_2m[index],
-              wind: dataArray.wind_speed_10m[index],
-              city: weather.city,
-              weather: weather.weather,
-              longitude: weather.longitude,
-              latitude: weather.latitude,
-              condition: weather.condition,
-            });
+            let next6Hours=[];
+            while(index<maxIndex){
+              console.log(index)
+              next6Hours.push({
+                time: dataArray.time[index],
+                temperature:convertTemperature (dataArray.temperature_2m[index],isCelsius, true),
+                humidity: dataArray.relative_humidity_2m[index],
+                wind: dataArray.wind_speed_10m[index],
+                city: weather.city,
+                weather: weather.weather,
+                longitude: weather.longitude,
+                latitude: weather.latitude,
+                condition: weather.condition,
+              });
+              index++;
+            }
+            console.log( next6Hours)
+            setNextHour(next6Hours);
           }
         });
       }
@@ -88,6 +110,7 @@ const Weather: React.FC = () => {
     if (city.lat !== undefined && city.lon !== undefined) {
       setLatitude(city.lat);
       setLongitude(city.lon);
+      checkIfNightTime(city.lat, city.lon);
       setWeatherInfo({ longitude: city.lon, latitude: city.lat });
     } else if (city.name) {
       setCityName(city.name);
@@ -131,16 +154,42 @@ const Weather: React.FC = () => {
           <LottieWeatherAnimation />
         </LoadingBox>
       ) : (
-        <ContentStack>
+        <ContentStack isNightTime={isNightTime}>
           {wrongCityName ? (
             <Typography variant="h4" color="white">
               City not found
             </Typography>
           ) : (
-            <InnerStack>
-              <Box sx={{ width: '100%' }}>
+            <Stack sx={{ width: '100%' , display:'flex', alignItems:'center' ,gap:'24px'}}>
+               <Box width='80%' >
                 <Search cityName={cityName} onSubmit={handleSearchSubmit} />
               </Box>
+              <Box display="flex" gap="8px" alignItems="center" width='100%' justifyContent='center' padding='12px'>
+        
+ 
+        <StyledTypography
+          sx={{
+            fontSize: "1.5rem",
+            color: "#222",
+          }}
+          variant="h5"
+        >
+          Now in
+        </StyledTypography>
+        <StyledTypography
+          sx={{
+            fontSize: "2rem",
+            color: "white",
+          }}
+          variant="h5"
+        >
+          {cityName}
+        </StyledTypography>
+      </Box>
+              <></>
+            <InnerBox>
+     
+             
               {weather && (
                 <CityWeather
                   city={cityName || ''}
@@ -152,7 +201,8 @@ const Weather: React.FC = () => {
                 />
               )}
               <HottestAndColdestCities />
-            </InnerStack>
+            </InnerBox>
+            </Stack>
           )}
         </ContentStack>
       )}
@@ -194,19 +244,33 @@ const ToggleWrapper = styled(Box)({
   right: '10px',
 });
 
-const ContentStack = styled(Stack)({
+interface ContentStackProps {
+  isNightTime: boolean;
+}
+
+const ContentStack = styled(Stack)<ContentStackProps>(({ isNightTime }) => ({
   top: 0,
   left: 0,
   width: '100%',
-  backgroundColor: '#41657f',
+  backgroundImage: isNightTime?`url(${darkImage})`: `url(${lightImage})`, 
+  backgroundSize: 'cover',
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   overflow: 'auto',
   paddingBlock: '36px',
-});
+})
+);
+const StyledTypography = styled(Typography)(() => ({
+  fontWeight: 600,
+  letterSpacing: "0.05em",
+  textTransform: "uppercase",
+  lineHeight: 1.2,
+  fontFamily: '"Roboto", sans-serif',
+  textShadow: "none",
+}));
 
-const InnerStack = styled(Stack)({
+const InnerBox = styled(Box)({
   display: 'flex',
   alignItems: 'center',
   width: '80%',

@@ -1,5 +1,6 @@
 import { Box, Stack, Typography, styled } from "@mui/material";
 import { WeatherData } from "./WeatherUtil";
+import HorizontalScrollDialog from "./HorizontalScrollDialog";
 
 interface CityWeatherProps {
   city: string;
@@ -7,7 +8,7 @@ interface CityWeatherProps {
   humidity: number;
   windSpeed: number;
   condition: string;
-  nextHour: WeatherData | undefined;
+  nextHour: WeatherData[] | undefined;
 }
 
 const StyledStack = styled(Stack)({
@@ -15,14 +16,14 @@ const StyledStack = styled(Stack)({
   padding: "24px",
   display: "flex",
   alignItems: "center",
-  borderRadius: "8px",
+  borderRadius: "18px",
   position: "relative",
   zIndex: 1,
   backgroundColor: "#ffffff59",
   gap: "12px",
 });
 
-const StyledTypography = styled(Typography)(({ theme }) => ({
+const StyledTypography = styled(Typography)(() => ({
   fontWeight: 600,
   letterSpacing: "0.05em",
   textTransform: "uppercase",
@@ -30,7 +31,14 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
   fontFamily: '"Roboto", sans-serif',
   textShadow: "none",
 }));
-
+const TitleTypography = styled(Typography)(() => ({
+    fontWeight: 700,
+    fontSize: "3rem",
+        textTransform: "uppercase",
+    fontFamily: '"Roboto", sans-serif',
+    textShadow: "grey",
+    color:'#ffffffad'
+  }));
 const CityWeather: React.FC<CityWeatherProps> = ({
   city,
   temperature,
@@ -39,32 +47,34 @@ const CityWeather: React.FC<CityWeatherProps> = ({
   condition,
   nextHour,
 }) => {
+    console.log(nextHour)
   return (
+    <Stack sx={{width:'80%', textAlign:'center'}}>
+
+
+        
     <StyledStack>
-      <Box display="flex" gap="8px" alignItems="center">
-        <StyledTypography
-          sx={{
-            fontSize: "1.5rem",
-            color: "#222",
-          }}
-          variant="h5"
-        >
-          Now in
-        </StyledTypography>
-        <StyledTypography
-          sx={{
-            fontSize: "2rem",
-            color: "white",
-          }}
-          variant="h5"
-        >
-          {city}
-        </StyledTypography>
-      </Box>
-      <StyledTypography variant="body1">Temperature: {temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</StyledTypography>
-      <StyledTypography variant="body1">Humidity: {humidity}%</StyledTypography>
-      <StyledTypography variant="body1">Wind Speed: {windSpeed} m/s</StyledTypography>
-      <Box
+        
+     
+        <Stack display='flex' width='80%' justifyContent='space-evenly'   height='250px'>
+            <Box textAlign='left' >
+            <TitleTypography >{temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</TitleTypography>
+            </Box>
+            <Stack display='flex' alignItems='flex-start'  height='80px' gap='12px' padding='24px'>
+            <DataBox display='flex' gap='8px'>
+                <StyledTypography variant="body1" sx={{color:'grey'}}>Humidity</StyledTypography>
+                <StyledTypography variant="body2" sx={{color:'white'}}> {humidity}%</StyledTypography>
+            </DataBox>
+            <DataBox display='flex'  gap='8px'>
+                <StyledTypography variant="body1" sx={{color:'grey'}}>Wind speed</StyledTypography>
+                <StyledTypography variant="body2"  sx={{color:'white'}}>{windSpeed} m/s</StyledTypography>
+                </DataBox>
+            </Stack>
+        </Stack>
+        <HorizontalScrollDialog hourlyData={nextHour ||[]}/>
+
+
+      {/* <Box
         sx={{
           width: "80%",
           backgroundColor: "white",
@@ -96,10 +106,12 @@ const CityWeather: React.FC<CityWeatherProps> = ({
             <StyledTypography variant="body1">Wind speed</StyledTypography>
             <StyledTypography variant="body2">{nextHour?.wind} m/s</StyledTypography>
           </Stack>
-        </Box>
-      </Box>
+        </Box> 
+      </Box> */}
       <WeatherAnimation condition={condition} />
     </StyledStack>
+    </Stack>
+
   );
 };
 
@@ -149,13 +161,39 @@ const RainAnimation = styled(Box)({
     transform: "translateX(-50%)",
   },
 });
-
+const DataBox = styled(Box)(({ theme }) => ({
+    background: theme.palette.grey[900],
+    padding: '16px 24px',
+    borderRadius: '8px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width:'80%',
+    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.2)",
+    color: theme.palette.text.primary,
+    gap: "12px",
+    '&:hover': {
+      transform: 'scale(1.05)',
+      transition: 'transform 0.3s ease',
+    },
+    "& .dataValue": {
+      fontSize: "1.6rem",
+      fontWeight: 700,
+      color: "#fff",
+    },
+    "& .dataLabel": {
+      fontSize: "1rem",
+      fontWeight: 500,
+      color: theme.palette.text.secondary,
+    },
+  }));
+  
 const SunAnimation = styled(Box)({
   position: "absolute",
-  top: "10%",
-  left: "80%",
-  width: "100px",
-  height: "100px",
+  top: "15%",
+  left: "70%",
+  width: "70px",
+  height: "70px",
   borderRadius: "50%",
   background: "rgb(245 180 50 / 64%)",
   boxShadow: "0 0 50px rgba(255, 255, 0, 0.6)",

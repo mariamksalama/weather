@@ -30,7 +30,6 @@ export const searchAlgolia = async (query: string, hitsPerPage: number, page: nu
         page:0,
       },
     });
-    console.log(result.hits.length);
     cities.push(...result.hits.map((hit: any) => ({
       objectID: hit.objectID,
       name: hit.name,

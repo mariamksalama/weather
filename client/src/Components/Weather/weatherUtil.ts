@@ -3,6 +3,7 @@ export type WeatherCoords =
 {cityName: string};
 
 export type WeatherData={
+  time?:string;
   city: string;
   temperature: number;
   weather: string;
@@ -35,10 +36,8 @@ export const fetchWeather = async (weatherData: WeatherCoords): Promise<WeatherD
       throw new Error(`Error: ${response.statusText}`);
     }
     const data = await response.json();
-    console.log(data);
    
     const condition = data.weather[0].main.toLowerCase();
-    console.log(condition);
 
       return {city: data.name, temperature: data.main.temp, weather: data.weather[0].description, humidity: data.main.humidity, wind: data.wind.speed, longitude: data.coord.lon, latitude: data.coord.lat, condition: condition};
     

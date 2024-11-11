@@ -28,7 +28,6 @@ const HottestCity: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('hot');
     const fetchCityData = async () => {
         try {
           const response = await fetch('http://localhost:3001/api/hottest-city');
