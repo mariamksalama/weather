@@ -3,17 +3,15 @@ import { City } from '../../types';
 import { saveObjectsToAlgolia, searchAlgolia } from '../algolia/algoliaService';
 import { fetchWeatherData } from '../weather/weatherService';
 
-const totalCities = 1000;
 import dotenv from 'dotenv';
 
 dotenv.config();
+const numberOfCities= 400;
 
 export const fetchCities = async (): Promise<City[]> => {
   const cities: City[] = [];
-  const maxRows = 100;
   const username = process.env.GEONAMES_USERNAME;
-
-    const url = `http://api.geonames.org/citiesJSON?north=90&south=-90&east=180&west=-180&lang=en&maxRows=500&startRow=1&username=${username}`;
+    const url = `http://api.geonames.org/citiesJSON?north=90&south=-90&east=180&west=-180&lang=en&maxRows=${numberOfCities}&startRow=1&username=${username}`;
     const response = await axios.get(url);
     cities.push(...response.data.geonames);
   
@@ -22,20 +20,24 @@ export const fetchCities = async (): Promise<City[]> => {
 };
 
 export const pushToAlgolia = async (cities: City[]): Promise<void> => {
-  const filteredCities = cities.map(city => ({
-    objectID: city.objectID,
-    name: city.name,
-    lat: city.lat,
-    lng: city.lng,
-    highTemperature: city.highTemperature || undefined,
-    lowTemperature: city.lowTemperature || undefined,
+
+  const filteredCities = await Promise.all(cities.map(async (city) => {
+    const weatherData = await fetchWeatherData(city.lat, city.lng);
+    return {
+      objectID: city.lat+city.lng,
+      name: city.name,
+      lat: city.lat,
+      lng: city.lng,
+      highTemperature: city.highTemperature || weatherData.temperature_2m_max[0],
+      lowTemperature: city.lowTemperature || weatherData.temperature_2m_max[0],
+    };
   }));
 
   await saveObjectsToAlgolia(filteredCities);
 };
 
 export const fetchCitiesFromAlgolia = async (): Promise<City[]> => {
-  return await searchAlgolia('', totalCities, 0);
+  return await searchAlgolia('', numberOfCities, 0);
 
 };
 
