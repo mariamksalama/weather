@@ -62,6 +62,12 @@ const Weather: React.FC = () => {
     const isCelsius = event.target.checked;
     localStorage.setItem('temperatureUnit', isCelsius ? 'celsius' : 'fahrenheit');
     setIsCelsius(isCelsius);
+    if (weather) {
+      setWeather({
+        ...weather,
+        temperature: convertTemperature(weather.temperature, isCelsius, false),
+      });
+    }
   };
 
   const checkIfNightTime = (latitude: number, longitude: number) => {
@@ -115,7 +121,6 @@ const Weather: React.FC = () => {
                 condition: weather.condition,
             }));
             
-            // Set the next hours
             setNextHours(next6Hours);
           }
         });
@@ -144,7 +149,7 @@ const Weather: React.FC = () => {
   };
 
   return (
-    <WeatherWrapper weatherCondition={condition}>
+    <WeatherWrapper >
       <ToggleWrapper>
         <FormControlLabel
         sx={{color:'white'}}
@@ -176,7 +181,7 @@ const Weather: React.FC = () => {
                     temperature={weather.temperature}
                     humidity={weather.humidity}
                     windSpeed={weather.wind}
-                    condition={weather.condition}
+                    condition={condition}
                     nextHour={nextHours}
                   />
                 )}
@@ -190,18 +195,15 @@ const Weather: React.FC = () => {
   );
 };
 
-interface WeatherWrapperProps {
-  weatherCondition: string;
-}
 
-const WeatherWrapper = styled(Box)<WeatherWrapperProps>(({ weatherCondition }) => ({
+const WeatherWrapper = styled(Box) ({
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',
   position: 'relative',
   transition: 'background 0.3s ease-in-out',
   backgroundColor: '#41657f',
-}));
+});
 
 const StickyBox = styled(Box)({
   position: 'sticky',

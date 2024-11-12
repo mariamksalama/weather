@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, {  useRef } from 'react';
 import { liteClient as algoliasearch } from 'algoliasearch/lite';
 import { InstantSearch, connectSearchBox, connectStateResults } from 'react-instantsearch-dom';
 import { Box, TextField, Paper, List, ListItem, ListItemText, Button, Popper } from '@mui/material';
@@ -9,7 +9,6 @@ interface SearchProps {
   onSubmit: (city: { lat?: number; lon?: number; name?: string }) => void;
 }
 
-const searchClient = algoliasearch('P1O884D4FU', 'a8ff75dbd1a9f9ff11141220a5884893');
 
 const SearchForm = styled('form')({
   display: 'flex',
@@ -28,6 +27,9 @@ const Hit = ({ hit, onClick }: any) => (
 );
 
 const Search: React.FC<SearchProps> = ({ onSubmit }) => {
+
+  const searchClient = algoliasearch( 'P1O884D4FU', 'bd7fec925d37afd4a86e9e26c15aac5b');
+
   const containerRef = useRef<HTMLInputElement>(null); 
 
 

@@ -18,7 +18,7 @@ const StyledStack = styled(Stack)({
   borderRadius: "18px",
   position: "relative",
   zIndex: 1,
-  maxWidth: "90vw",
+  maxWidth: "80vw",
   backgroundColor: "#ffffff59",
   gap: "12px",
 });
@@ -83,13 +83,14 @@ const CityWeather: React.FC<CityWeatherProps> = ({
 };
 
 const WeatherAnimation = ({ condition }: { condition: string }) => {
-  if (condition === "rain") {
+  if (condition === "clear") {
+    console.log('clear')
     return <RainAnimation />;
   }
-  if (condition === "clear") {
+  if (condition === "rain") {
     return <SunAnimation />;
   }
-  if (condition === "snow") {
+  if (condition === "haze") {
     return <SnowAnimation />;
   }
   return null;
@@ -106,8 +107,8 @@ const RainAnimation = styled(Box)({
   zIndex: -1,
   "@keyframes rain": {
     "0%": {
-      top: "-10px",
-      opacity: 0.5,
+      top: "-20px",
+      opacity: 0.8,
     },
     "100%": {
       top: "100%",
@@ -115,19 +116,40 @@ const RainAnimation = styled(Box)({
     },
   },
   animation: "rain 1s linear infinite",
-  "::after": {
+  "::before": {
     content: '""',
     position: "absolute",
-    top: "0",
-    left: "50%",
-    width: "2px",
-    height: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    top: "0%",
+    left: "50%", // Centered horizontally, will adjust with randomize
+    width: "4px", // Increased width for larger raindrops
+    height: "20px", // Increased height for longer raindrops
+    backgroundColor: "rgba(255, 255, 255, 0.9)", // Increased opacity for visibility
     animation: "rain 0.5s linear infinite",
     animationDelay: "0s",
     transform: "translateX(-50%)",
   },
+  "::after": {
+    content: '""',
+    position: "absolute",
+    top: "0%",
+    left: "30%", // Another position for variation
+    width: "6px", // Larger snowflakes
+    height: "20px",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    animation: "rain 0.5s linear infinite",
+    animationDelay: "1s", // Delayed start for variety
+    transform: "translateX(-50%)",
+  },
+  "::nth-child(odd)::before": {
+    left: "calc(100% * random())", // Randomize horizontal position
+  },
+  "::nth-child(even)::after": {
+    left: "calc(100% * random())",
+  },
 });
+
+
+
 const DataBox = styled(Box)(({ theme }) => ({
     background: theme.palette.grey[900],
     padding: '16px 24px',
@@ -197,7 +219,7 @@ const SnowAnimation = styled(Box)({
       transform: "translateY(-100%)",
     },
     "100%": {
-      opacity: 0,
+      opacity: 0.5, 
       transform: "translateY(100%)",
     },
   },
@@ -207,14 +229,34 @@ const SnowAnimation = styled(Box)({
     position: "absolute",
     top: "0%",
     left: "50%",
-    width: "5px",
-    height: "5px",
+    width: "18px", 
+    height: "18px", 
     backgroundColor: "white",
     borderRadius: "50%",
     animation: "snow 3s linear infinite",
     animationDelay: "0s",
     transform: "translateX(-50%)",
   },
+  "::after": {
+    content: '""',
+    position: "absolute",
+    top: "0%",
+    left: "30%",
+    width: "6px", 
+    height: "6px", 
+    backgroundColor: "white",
+    borderRadius: "50%",
+    animation: "snow 4s linear infinite", 
+    animationDelay: "1s", 
+    transform: "translateX(-50%)",
+  },
+  "::nth-of-type(odd)": {
+    "::before": {
+      animationDelay: "0.5s",
+    },
+  },
 });
+
+
 
 export default CityWeather;
