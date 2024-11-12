@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, {  useEffect, useState } from 'react';
 import { Box, FormControlLabel, Stack, Switch, Typography, styled } from '@mui/material';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
 import Search from '../search/search';
@@ -22,7 +22,7 @@ const Weather: React.FC = () => {
   const [isNightTime, setIsNightTime] = useState<boolean>(false);
   const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
 
-  const setWeatherInfo = useCallback((weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
+  const setWeatherInfo = async(weatherInfo: { longitude: number; latitude: number } | { cityName: string })=>{
     Promise.all([
       fetchWeather(weatherInfo),
       new Promise((resolve) => setTimeout(resolve, 2000)),
@@ -42,8 +42,9 @@ const Weather: React.FC = () => {
         setWrongCityName(true);
       }
       setIsLoading(false);
-    });
-  }, [isCelsius]);
+    })
+
+}
 
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
@@ -56,7 +57,7 @@ const Weather: React.FC = () => {
         console.error('Error fetching geolocation:', error);
       }
     );
-  }, [setWeatherInfo]);
+  }, []);
 
   const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isCelsius = event.target.checked;
