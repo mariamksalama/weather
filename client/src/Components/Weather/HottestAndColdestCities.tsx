@@ -4,7 +4,6 @@ import HottestCity from "./HottestCity";
 
 const StyledStack = styled(Stack)({
   width: '100%',
-  paddingInline: '24px',
   display: 'flex',
   flexDirection: 'column', 
   alignItems: 'center',

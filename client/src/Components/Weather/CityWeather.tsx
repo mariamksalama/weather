@@ -2,6 +2,7 @@ import { Box, Stack, Typography, styled } from "@mui/material";
 import HorizontalScrollDialog from "./HorizontalScrollDialog";
 import { WeatherData } from "./WeatherUtil";
 
+
 interface CityWeatherProps {
   city: string;
   temperature: number;
@@ -83,10 +84,10 @@ const CityWeather: React.FC<CityWeatherProps> = ({
 };
 
 const WeatherAnimation = ({ condition }: { condition: string }) => {
-  if (condition === "haze") {
+  if (condition === "rain") {
     return <RainAnimation />;
   }
-  if (condition === "haze") {
+  if (condition === "clear") {
     return <SunAnimation />;
   }
   if (condition === "snow") {

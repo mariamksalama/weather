@@ -1,4 +1,4 @@
-import React, {  useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, FormControlLabel, Stack, Switch, Typography, styled } from '@mui/material';
 import LottieWeatherAnimation from './LottieWeatherAnimation';
 import Search from '../search/search';
@@ -11,68 +11,135 @@ import moment from 'moment-timezone';
 import { fetchHourlyWeather, fetchWeather, WeatherData } from './WeatherUtil';
 
 const Weather: React.FC = () => {
-  const [weather, setWeather] = useState<WeatherData | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [cityName, setCityName] = useState<string | null>(null);
-  const [longitude, setLongitude] = useState<number>(0);
-  const [latitude, setLatitude] = useState<number>(0);
-  const [wrongCityName, setWrongCityName] = useState<boolean>(false);
-  const [nextHours, setNextHours] = useState<WeatherData[]>([]);
-  const [isNightTime, setIsNightTime] = useState<boolean>(false);
-  const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
+  const [weatherState, setWeatherState] = useState({
+    weather: null as WeatherData | null,
+    cityName: null as string | null,
+    longitude: 0,
+    latitude: 0,
+    wrongCityName: false,
+    nextHours: [] as WeatherData[],
+    isNightTime: false,
+    isLoading: true,
+    isCelsius: localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius',
+  });
 
-  const setWeatherInfo = async(weatherInfo: { longitude: number; latitude: number } | { cityName: string })=>{
-    Promise.all([
-      fetchWeather(weatherInfo),
-      new Promise((resolve) => setTimeout(resolve, 2000)),
-    ]).then(([weather]) => {
+  const setWeatherInfo = async (weatherInfo: { longitude: number; latitude: number } | { cityName: string }) => {
+    try {
+      const [weather] = await Promise.all([
+        fetchWeather(weatherInfo),
+        new Promise((resolve) => setTimeout(resolve, 2000)), // Simulate loading delay
+      ]);
+
       if (weather) {
-        setWeather({
-          ...weather,
-          temperature: convertTemperature(weather.temperature, isCelsius, true),
-        });
-        setCityName(weather.city);
-        setLongitude(weather.longitude);
-        setLatitude(weather.latitude);
-        setWrongCityName(false);
+        setWeatherState((prevState) => ({
+          ...prevState,
+          weather: {
+            ...weather,
+            temperature: convertTemperature(weather.temperature, prevState.isCelsius, true),
+          },
+          cityName: weather.city,
+          longitude: weather.longitude,
+          latitude: weather.latitude,
+          wrongCityName: false,
+          isLoading: false,
+        }));
       } else {
-        setWeather(null);
-        setWrongCityName(true);
+        setWeatherState((prevState) => ({
+          ...prevState,
+          weather: null,
+          wrongCityName: true,
+          isLoading: false,
+        }));
       }
-      setIsLoading(false);
-    })
-
-}
-
-  useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const latitude = position.coords.latitude;
-        const longitude = position.coords.longitude;
-        setWeatherInfo({ longitude, latitude });
-      },
-      (error) => {
-        console.error('Error fetching geolocation:', error);
-      }
-    );
-  }, []);
-
-  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isCelsius = event.target.checked;
-    localStorage.setItem('temperatureUnit', isCelsius ? 'celsius' : 'fahrenheit');
-    setIsCelsius(isCelsius);
-    if (weather) {
-      setWeather({
-        ...weather,
-        temperature: convertTemperature(weather.temperature, isCelsius, false),
-      });
+    } catch (error) {
+      console.error('Error fetching weather data:', error);
+      setWeatherState((prevState) => ({
+        ...prevState,
+        weather: null,
+        wrongCityName: true,
+        isLoading: false,
+      }));
     }
   };
+
+  useEffect(() => {
+    const getGeolocation = () => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setWeatherInfo({ longitude, latitude });
+        },
+        (error) => {
+          console.error('Error fetching geolocation:', error);
+          setWeatherState((prevState) => ({
+            ...prevState,
+            isLoading: false,
+          }));
+        }
+      );
+    };
+
+    getGeolocation();
+  }, []); // Run only once on mount to fetch geolocation
+
+  useEffect(() => {
+    if (weatherState.latitude && weatherState.longitude) {
+      const updateWeather = async () => {
+        // Check if it's night time
+        checkIfNightTime(weatherState.latitude, weatherState.longitude);
+
+        // Fetch hourly weather data
+        const data = await fetchHourlyWeather({
+          longitude: weatherState.longitude,
+          latitude: weatherState.latitude,
+        });
+
+        if (data && weatherState.weather) {
+          const offsetHours = weatherState.weather.timezone! / 3600;
+          const currentTimeUtc = moment.utc();
+          const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
+          const nextHour = timeInOffset.add(1, 'hours');
+          const nextHourTime = nextHour.format('HH:00');
+
+          const dataArray = data.hourly;
+          let index = dataArray.time.findIndex((time: string) => time.includes(nextHourTime));
+
+          if (index !== -1) {
+            const next6Hours = dataArray.time.slice(index, index + 6).map((time: any, i: any) => ({
+              time,
+              timezone: weatherState.weather?.timezone || 0,
+              temperature: convertTemperature(dataArray.temperature_2m[index + i], weatherState.isCelsius, true),
+              humidity: dataArray.relative_humidity_2m[index + i],
+              wind: dataArray.wind_speed_10m[index + i],
+              city: weatherState.weather?.city || '',
+              weather: weatherState.weather?.weather || '',
+              longitude: weatherState.weather?.longitude || 0,
+              latitude: weatherState.weather?.latitude || 0,
+              condition: weatherState.weather?.condition || '',
+            }));
+            setWeatherState((prevState) => ({
+              ...prevState,
+              nextHours: next6Hours,
+            }));
+          }
+        }
+      };
+
+      updateWeather();
+
+      const intervalId = setInterval(updateWeather, 3600000); // Update every hour
+
+      return () => clearInterval(intervalId); // Cleanup on component unmount
+    }
+  }, [weatherState.latitude, weatherState.longitude, weatherState.weather, weatherState.isCelsius]);
 
   const checkIfNightTime = (latitude: number, longitude: number) => {
     const times = SunCalc.getTimes(new Date(), latitude, longitude);
     const now = new Date();
-    setIsNightTime(now < times.sunrise || now > times.sunset);
+    setWeatherState((prevState) => ({
+      ...prevState,
+      isNightTime: now < times.sunrise || now > times.sunset,
+    }));
   };
 
   const convertTemperature = (temperature: number, toCelsius: boolean, isCelsius: boolean) => {
@@ -81,110 +148,83 @@ const Weather: React.FC = () => {
     return parseFloat(temp.toFixed(1));
   };
 
-  useEffect(() => {
-    const updateWeather = () => {
-      if (latitude && longitude) {
-        checkIfNightTime(latitude, longitude);
-        fetchHourlyWeather({ longitude, latitude }).then((data) => {
-          if (data && weather) {
-
-            const offsetHours = weather.timezone! / 3600;  
-            
-            const currentTimeUtc = moment.utc();
-            
-            const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
-            
-            const nextHour = timeInOffset.add(1, 'hours');
-            
-            const nextHourTime = nextHour.format('HH:00');  
-            
-   
-            const dataArray = data.hourly;
-            let index = dataArray.time.findIndex((time: string) => time.includes(nextHourTime)); 
-            
-            if (index === -1) {
-                console.error("Next hour time not found in data.");
-                return;
-            }
-            
-            const next6Hours = dataArray.time.slice(index, index + 6).map((time: any, i: any) => ({
-                time,
-                timezone: weather.timezone,
-                temperature: convertTemperature(dataArray.temperature_2m[index + i], isCelsius, true),
-                humidity: dataArray.relative_humidity_2m[index + i],
-                wind: dataArray.wind_speed_10m[index + i],
-                city: weather.city,
-                weather: weather.weather,
-                longitude: weather.longitude,
-                latitude: weather.latitude,
-                condition: weather.condition,
-            }));
-            
-            setNextHours(next6Hours);
-          }
-        });
-      }
-    };
-
-    updateWeather();
-
-    const intervalId = setInterval(updateWeather, 3600000);
-
-    return () => clearInterval(intervalId);
-  }, [longitude, latitude, weather, isCelsius]);
+  const handleToggleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isCelsius = event.target.checked;
+    localStorage.setItem('temperatureUnit', isCelsius ? 'celsius' : 'fahrenheit');
+    setWeatherState((prevState) => ({
+      ...prevState,
+      isCelsius,
+      weather: prevState.weather ? {
+        ...prevState.weather,
+        temperature: convertTemperature(prevState.weather.temperature, isCelsius, false),
+      } : null,
+    }));
+  };
 
   const handleSearchSubmit = (city: { lat?: number; lon?: number; name?: string }) => {
-    setIsLoading(true);
+    setWeatherState((prevState) => ({
+      ...prevState,
+      isLoading: true,
+    }));
 
     if (city.lat !== undefined && city.lon !== undefined) {
-      setLatitude(city.lat);
-      setLongitude(city.lon);
-      checkIfNightTime(city.lat, city.lon);
+      setWeatherState((prevState) => ({
+        ...prevState,
+        latitude: city.lat || 0,
+        longitude: city.lon ||0,
+      }));
       setWeatherInfo({ longitude: city.lon, latitude: city.lat });
     } else if (city.name) {
-      setCityName(city.name);
+      setWeatherState((prevState) => ({
+        ...prevState,
+        cityName: city.name || null,
+      }));
       setWeatherInfo({ cityName: city.name });
     }
   };
 
   return (
-    <WeatherWrapper >
+    <WeatherWrapper>
       <ToggleWrapper>
         <FormControlLabel
-        sx={{color:'white'}}
-          control={<Switch checked={isCelsius} onChange={handleToggleChange} />}
-          label={isCelsius ? 'Celsius' : 'Fahrenheit'}
+          sx={{ color: 'white' }}
+          control={<Switch checked={weatherState.isCelsius} onChange={handleToggleChange} />}
+          label={weatherState.isCelsius ? 'Celsius' : 'Fahrenheit'}
         />
       </ToggleWrapper>
-      {isLoading ? (
+
+      {weatherState.isLoading ? (
         <LoadingBox>
           <LottieWeatherAnimation />
         </LoadingBox>
       ) : (
-        <ContentStack isNightTime={isNightTime}>
-          {wrongCityName ? (
+        <ContentStack isNightTime={weatherState.isNightTime}>
+          {weatherState.wrongCityName ? (
             <Typography variant="h4" color="white">
               City not found
             </Typography>
           ) : (
             <Stack sx={{ width: '100%', display: 'flex', alignItems: 'center', gap: '24px' }}>
-              {/* Search Bar as Sticky */}
               <StickyBox>
-                <Search cityName={cityName} onSubmit={handleSearchSubmit} />
+                <Search cityName={weatherState.cityName} onSubmit={handleSearchSubmit} />
               </StickyBox>
 
               <InnerBox>
-                {weather && (
+                <Box width='60%'>
+                {weatherState.weather && (
                   <CityWeather
-                    city={cityName || ''}
-                    temperature={weather.temperature}
-                    humidity={weather.humidity}
-                    windSpeed={weather.wind}
-                    condition={weather.condition}
-                    nextHour={nextHours}
+                    city={weatherState.cityName || ''}
+                    temperature={weatherState.weather.temperature}
+                    humidity={weatherState.weather.humidity}
+                    windSpeed={weatherState.weather.wind}
+                    condition={weatherState.weather.condition}
+                    nextHour={weatherState.nextHours}
                   />
                 )}
+                </Box>
+                <Box width='60%'>
                 <HottestAndColdestCities />
+                </Box>
               </InnerBox>
             </Stack>
           )}
@@ -193,7 +233,6 @@ const Weather: React.FC = () => {
     </WeatherWrapper>
   );
 };
-
 
 const WeatherWrapper = styled(Box) ({
   display: 'flex',
