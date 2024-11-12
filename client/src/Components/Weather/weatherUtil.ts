@@ -17,7 +17,7 @@ export type WeatherData={
 }
 
 export const fetchWeather = async (weatherData: WeatherCoords): Promise<WeatherData | null> => {
-  const apiKey = '6ddb99a9921e9c8a3d87bf96b0f7f761';
+  const apiKey = 'ca863dd7c78f77e8f34d4c8a0174dc78';
  
 
   let url;
