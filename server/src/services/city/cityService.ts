@@ -24,7 +24,7 @@ export const pushToAlgolia = async (cities: City[]): Promise<void> => {
   const filteredCities = await Promise.all(cities.map(async (city) => {
     const weatherData = await fetchWeatherData(city.lat, city.lng);
     return {
-      objectID: city.lat+city.lng,
+      objectID: city.lat+''+city.lng,
       name: city.name,
       lat: city.lat,
       lng: city.lng,
