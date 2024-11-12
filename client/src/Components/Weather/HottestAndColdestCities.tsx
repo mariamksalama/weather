@@ -1,4 +1,4 @@
-import { Stack, Typography, Box, styled } from "@mui/material";
+import { Stack,  styled } from "@mui/material";
 import ColdestCity from "./ColdestCity";
 import HottestCity from "./HottestCity";
 

@@ -83,14 +83,13 @@ const CityWeather: React.FC<CityWeatherProps> = ({
 };
 
 const WeatherAnimation = ({ condition }: { condition: string }) => {
-  if (condition === "clear") {
-    console.log('clear')
+  if (condition === "rain") {
     return <RainAnimation />;
   }
-  if (condition === "rain") {
+  if (condition === "clear") {
     return <SunAnimation />;
   }
-  if (condition === "haze") {
+  if (condition === "snow") {
     return <SnowAnimation />;
   }
   return null;
