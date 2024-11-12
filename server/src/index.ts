@@ -9,14 +9,12 @@ const app = express();
 
 const port = process.env.PORT || 3001;
 
-// Configure CORS to allow requests from your client
 const corsOptions = {
-  origin: 'http://localhost:3000', // Replace with your client's origin
+  origin: 'http://localhost:3000', 
   optionsSuccessStatus: 200,
 };
 
-app.use(cors(corsOptions)); // Use CORS middleware with options
-app.use(express.json());
+app.use(cors(corsOptions)); 
 app.use('/api', cityRoutes);
 
 app.listen(port, () => {

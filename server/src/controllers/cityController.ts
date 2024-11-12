@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
-import { fetchCities, pushToAlgolia, updateCityTemperatures, fetchCitiesFromAlgolia } from '../services/city/cityService';
+import { fetchCities, pushToAlgolia, fetchCitiesFromAlgolia } from '../services/city/cityService';
 
 export const populateCities = async (req: Request, res: Response) => {
   try {
     const cities = await fetchCities();
     await pushToAlgolia(cities);
-    await updateCityTemperatures();
     res.json({ message: 'Cities populated and temperatures updated successfully' });
   } catch (error) {
     if (error instanceof Error) {
