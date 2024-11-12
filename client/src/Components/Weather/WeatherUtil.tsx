@@ -4,7 +4,7 @@ export type WeatherCoords =
 
 export type WeatherData={
   time?:string;
-  timezone?:number;
+  timezone:number;
   city: string;
   temperature: number;
   weather: string;
@@ -40,6 +40,7 @@ export const fetchWeather = async (weatherData: WeatherCoords): Promise<WeatherD
     console.log(data)
    
     const condition = data.weather[0].main.toLowerCase();
+    
 
       return {city: data.name, temperature: data.main.temp, weather: data.weather[0].description, humidity: data.main.humidity, wind: data.wind.speed, longitude: data.coord.lon, latitude: data.coord.lat, timezone:data.timezone, condition: condition};
     

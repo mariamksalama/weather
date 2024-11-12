@@ -8,7 +8,7 @@ import darkImage from '../../assets/images/dark.jpg';
 import lightImage from '../../assets/images/light.jpg';
 import SunCalc from 'suncalc';
 import moment from 'moment-timezone';
-import { WeatherData, fetchHourlyWeather, fetchWeather } from './WeatherUtil';
+import { WeatherData, fetchWeather, fetchHourlyWeather } from './WeatherUtil';
 
 const Weather: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
@@ -18,7 +18,7 @@ const Weather: React.FC = () => {
   const [latitude, setLatitude] = useState<number>(0);
   const [condition, setCondition] = useState<string>('clear');
   const [wrongCityName, setWrongCityName] = useState<boolean>(false);
-  const [nextHour, setNextHour] = useState<WeatherData[]>([]);
+  const [nextHours, setNextHours] = useState<WeatherData[]>([]);
   const [isNightTime, setIsNightTime] = useState<boolean>(false);
   const [isCelsius, setIsCelsius] = useState<boolean>(localStorage.getItem('temperatureUnit') === null || localStorage.getItem('temperatureUnit') === 'celsius');
 
@@ -82,31 +82,41 @@ const Weather: React.FC = () => {
         checkIfNightTime(latitude, longitude);
         fetchHourlyWeather({ longitude, latitude }).then((data) => {
           if (data && weather) {
-            const offsetHours = weather.timezone! / 3600;
-            const currentTimeUtc = moment.utc();
-            const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
-            const nextHour = timeInOffset.add(1, 'hours');
-            const nextHourTime = `${nextHour.format('YYYY-MM-DDTHH')}:00`;
 
-            let index = data.hourly.time.indexOf(nextHourTime);
-            const maxIndex = index + 6;
+            const offsetHours = weather.timezone! / 3600;  
+            
+            const currentTimeUtc = moment.utc();
+            
+            const timeInOffset = currentTimeUtc.clone().add(offsetHours, 'hours');
+            
+            const nextHour = timeInOffset.add(1, 'hours');
+            
+            const nextHourTime = nextHour.format('HH:00');  
+            
+   
             const dataArray = data.hourly;
-            let next6Hours = [];
-            while (index < maxIndex) {
-              next6Hours.push({
-                time: dataArray.time[index],
-                temperature: convertTemperature(dataArray.temperature_2m[index], isCelsius, true),
-                humidity: dataArray.relative_humidity_2m[index],
-                wind: dataArray.wind_speed_10m[index],
+            let index = dataArray.time.findIndex((time: string) => time.includes(nextHourTime)); 
+            
+            if (index === -1) {
+                console.error("Next hour time not found in data.");
+                return;
+            }
+            
+            const next6Hours = dataArray.time.slice(index, index + 6).map((time: any, i: any) => ({
+                time,
+                timezone: weather.timezone,
+                temperature: convertTemperature(dataArray.temperature_2m[index + i], isCelsius, true),
+                humidity: dataArray.relative_humidity_2m[index + i],
+                wind: dataArray.wind_speed_10m[index + i],
                 city: weather.city,
                 weather: weather.weather,
                 longitude: weather.longitude,
                 latitude: weather.latitude,
                 condition: weather.condition,
-              });
-              index++;
-            }
-            setNextHour(next6Hours);
+            }));
+            
+            // Set the next hours
+            setNextHours(next6Hours);
           }
         });
       }
@@ -167,7 +177,7 @@ const Weather: React.FC = () => {
                     humidity={weather.humidity}
                     windSpeed={weather.wind}
                     condition={weather.condition}
-                    nextHour={nextHour}
+                    nextHour={nextHours}
                   />
                 )}
                 <HottestAndColdestCities />
