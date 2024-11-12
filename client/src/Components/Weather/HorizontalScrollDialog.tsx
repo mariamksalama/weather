@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Stack, Typography, Tooltip, styled } from "@mui/material";
+import { Box, Typography, Tooltip, styled } from "@mui/material";
 import { WeatherData } from './WeatherUtil';
 
 interface HourlyWeatherProps {
@@ -10,7 +10,7 @@ const HorizontalScrollDialog: React.FC<HourlyWeatherProps> = ({ hourlyData }) =>
   const temperatureUnit = localStorage.getItem('temperatureUnit') || 'celsius';
 
   const displayTemperature = (temp: number) =>
-    temperatureUnit === 'fahrenheit' ? parseFloat(((temp * 9) / 5 + 32).toFixed(1)) : temp;
+      parseFloat(temp.toFixed(1));
 
   return (
     <Box sx={{

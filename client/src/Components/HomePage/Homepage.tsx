@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import Weather from '../weather/Weather';
+import Weather from '../weather/weather';
 
 
 const Homepage: React.FC = () => {

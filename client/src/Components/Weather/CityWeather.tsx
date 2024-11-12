@@ -1,6 +1,6 @@
 import { Box, Stack, Typography, styled } from "@mui/material";
-import { WeatherData } from "./WeatherUtil";
 import HorizontalScrollDialog from "./HorizontalScrollDialog";
+import { WeatherData } from "./WeatherUtil";
 
 interface CityWeatherProps {
   city: string;
@@ -12,13 +12,13 @@ interface CityWeatherProps {
 }
 
 const StyledStack = styled(Stack)({
-  width: "75%",
   padding: "24px",
   display: "flex",
   alignItems: "center",
   borderRadius: "18px",
   position: "relative",
   zIndex: 1,
+  maxWidth: "80vw",
   backgroundColor: "#ffffff59",
   gap: "12px",
 });
@@ -47,20 +47,22 @@ const CityWeather: React.FC<CityWeatherProps> = ({
   condition,
   nextHour,
 }) => {
-    console.log(nextHour)
   return (
-    <Stack sx={{width:'80%', textAlign:'center'}}>
+    <Stack sx={{ textAlign:'center'}}>
 
 
         
     <StyledStack>
         
      
-        <Stack display='flex' width='80%' justifyContent='space-evenly'   height='250px'>
+        <Stack display='flex'   width='80%' justifyContent='space-evenly'   height='fit-content' marginBlock='12px'>
+       
             <Box textAlign='left' >
+            <TitleTypography >{city}</TitleTypography>
+
             <TitleTypography >{temperature}{localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</TitleTypography>
             </Box>
-            <Stack display='flex' alignItems='flex-start'  height='80px' gap='12px' padding='24px'>
+            <Stack display='flex' alignItems='flex-start'   gap='12px' padding='24px'>
             <DataBox display='flex' gap='8px'>
                 <StyledTypography variant="body1" sx={{color:'grey'}}>Humidity</StyledTypography>
                 <StyledTypography variant="body2" sx={{color:'white'}}> {humidity}%</StyledTypography>
@@ -71,43 +73,8 @@ const CityWeather: React.FC<CityWeatherProps> = ({
                 </DataBox>
             </Stack>
         </Stack>
+       
         <HorizontalScrollDialog hourlyData={nextHour ||[]}/>
-
-
-      {/* <Box
-        sx={{
-          width: "80%",
-          backgroundColor: "white",
-          padding: "8px",
-          borderRadius: "8px",
-          textAlign: "center",
-          border: "4px solid #2a3946",
-        }}
-      >
-        <StyledTypography
-          sx={{
-            fontSize: "1rem",
-            color: "#222",
-            marginBlock: "12px",
-          }}
-        >
-          Your Hourly Weather Update
-        </StyledTypography>
-        <Box display="flex" gap="8px" alignItems="center" justifyContent="space-evenly">
-          <Stack>
-            <StyledTypography variant="body1">Temperature</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.temperature} {localStorage.getItem('temperatureUnit')==='fahrenheit'?'°F':'°C'}</StyledTypography>
-          </Stack>
-          <Stack>
-            <StyledTypography variant="body1">Humidity</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.humidity}%</StyledTypography>
-          </Stack>
-          <Stack>
-            <StyledTypography variant="body1">Wind speed</StyledTypography>
-            <StyledTypography variant="body2">{nextHour?.wind} m/s</StyledTypography>
-          </Stack>
-        </Box> 
-      </Box> */}
       <WeatherAnimation condition={condition} />
     </StyledStack>
     </Stack>
@@ -116,13 +83,14 @@ const CityWeather: React.FC<CityWeatherProps> = ({
 };
 
 const WeatherAnimation = ({ condition }: { condition: string }) => {
-  if (condition === "rain") {
+  if (condition === "clear") {
+    console.log('clear')
     return <RainAnimation />;
   }
-  if (condition === "clear") {
+  if (condition === "rain") {
     return <SunAnimation />;
   }
-  if (condition === "snow") {
+  if (condition === "haze") {
     return <SnowAnimation />;
   }
   return null;
@@ -139,8 +107,8 @@ const RainAnimation = styled(Box)({
   zIndex: -1,
   "@keyframes rain": {
     "0%": {
-      top: "-10px",
-      opacity: 0.5,
+      top: "-20px",
+      opacity: 0.8,
     },
     "100%": {
       top: "100%",
@@ -148,19 +116,40 @@ const RainAnimation = styled(Box)({
     },
   },
   animation: "rain 1s linear infinite",
-  "::after": {
+  "::before": {
     content: '""',
     position: "absolute",
-    top: "0",
-    left: "50%",
-    width: "2px",
-    height: "10px",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    top: "0%",
+    left: "50%", // Centered horizontally, will adjust with randomize
+    width: "4px", // Increased width for larger raindrops
+    height: "20px", // Increased height for longer raindrops
+    backgroundColor: "rgba(255, 255, 255, 0.9)", // Increased opacity for visibility
     animation: "rain 0.5s linear infinite",
     animationDelay: "0s",
     transform: "translateX(-50%)",
   },
+  "::after": {
+    content: '""',
+    position: "absolute",
+    top: "0%",
+    left: "30%", // Another position for variation
+    width: "6px", // Larger snowflakes
+    height: "20px",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    animation: "rain 0.5s linear infinite",
+    animationDelay: "1s", // Delayed start for variety
+    transform: "translateX(-50%)",
+  },
+  "::nth-child(odd)::before": {
+    left: "calc(100% * random())", // Randomize horizontal position
+  },
+  "::nth-child(even)::after": {
+    left: "calc(100% * random())",
+  },
 });
+
+
+
 const DataBox = styled(Box)(({ theme }) => ({
     background: theme.palette.grey[900],
     padding: '16px 24px',
@@ -230,7 +219,7 @@ const SnowAnimation = styled(Box)({
       transform: "translateY(-100%)",
     },
     "100%": {
-      opacity: 0,
+      opacity: 0.5, 
       transform: "translateY(100%)",
     },
   },
@@ -240,14 +229,34 @@ const SnowAnimation = styled(Box)({
     position: "absolute",
     top: "0%",
     left: "50%",
-    width: "5px",
-    height: "5px",
+    width: "18px", 
+    height: "18px", 
     backgroundColor: "white",
     borderRadius: "50%",
     animation: "snow 3s linear infinite",
     animationDelay: "0s",
     transform: "translateX(-50%)",
   },
+  "::after": {
+    content: '""',
+    position: "absolute",
+    top: "0%",
+    left: "30%",
+    width: "6px", 
+    height: "6px", 
+    backgroundColor: "white",
+    borderRadius: "50%",
+    animation: "snow 4s linear infinite", 
+    animationDelay: "1s", 
+    transform: "translateX(-50%)",
+  },
+  "::nth-of-type(odd)": {
+    "::before": {
+      animationDelay: "0.5s",
+    },
+  },
 });
+
+
 
 export default CityWeather;
