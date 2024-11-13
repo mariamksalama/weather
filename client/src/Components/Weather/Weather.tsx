@@ -27,7 +27,7 @@ const Weather: React.FC = () => {
     try {
       const [weather] = await Promise.all([
         fetchWeather(weatherInfo),
-        new Promise((resolve) => setTimeout(resolve, 2000)), // Simulate loading delay
+        new Promise((resolve) => setTimeout(resolve, 2000)), 
       ]);
 
       if (weather) {
@@ -125,6 +125,7 @@ const Weather: React.FC = () => {
 
       updateWeather();
 
+      //updates the temp every hour
       const intervalId = setInterval(updateWeather, 3600000); 
 
       return () => clearInterval(intervalId); 
