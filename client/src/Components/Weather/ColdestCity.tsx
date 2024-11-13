@@ -16,15 +16,15 @@ const BackgroundBox = styled(Box)({
   textShadow: '0 2px 4px rgba(0, 0, 0, 0.5)',
   borderRadius: '8px',
   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-  position: 'relative', // Ensure we can position the banner inside this box
+  position: 'relative',
 });
 
 const Banner = styled(Box)({
-  position: 'absolute', // Position at the top of the image
+  position: 'absolute', 
   top: 0,
   left: 0,
   width: '100%',
-  backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
+  backgroundColor: 'rgba(0, 0, 0, 0.5)', 
   color: '#fff',
   paddingBlock: '8px',
   textAlign: 'center',

@@ -80,15 +80,13 @@ const Weather: React.FC = () => {
     };
 
     getGeolocation();
-  }, []); // Run only once on mount to fetch geolocation
+  }, []); 
 
   useEffect(() => {
     if (weatherState.latitude && weatherState.longitude) {
       const updateWeather = async () => {
-        // Check if it's night time
         checkIfNightTime(weatherState.latitude, weatherState.longitude);
 
-        // Fetch hourly weather data
         const data = await fetchHourlyWeather({
           longitude: weatherState.longitude,
           latitude: weatherState.latitude,
@@ -127,9 +125,9 @@ const Weather: React.FC = () => {
 
       updateWeather();
 
-      const intervalId = setInterval(updateWeather, 3600000); // Update every hour
+      const intervalId = setInterval(updateWeather, 3600000); 
 
-      return () => clearInterval(intervalId); // Cleanup on component unmount
+      return () => clearInterval(intervalId); 
     }
   }, [weatherState.latitude, weatherState.longitude, weatherState.weather, weatherState.isCelsius]);
 
