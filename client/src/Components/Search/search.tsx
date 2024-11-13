@@ -22,7 +22,7 @@ const SearchInput = styled(TextField)({
 
 const Hit = ({ hit, onClick }: any) => (
   <ListItem component={Button} onClick={() => onClick(hit)}>
-    <ListItemText primary={hit.name} />
+    <ListItemText primary={hit.name} secondary={hit.lowTemperature+'-'+hit.highTemperature}/>
   </ListItem>
 );
 
